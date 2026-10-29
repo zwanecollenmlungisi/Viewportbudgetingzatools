@@ -1094,7 +1094,7 @@ function setAuthMode(mode) {
 function showApp() {
   $('#boot').style.display = 'none';
   $('#site').style.display = 'none';
-  $('#app').style.display = '';
+  $('#app').style.display = 'block';
   updateUserChip();
   ['#formIncome', '#formExpense', '#formAsset'].forEach(sel => {
     const f = $(sel); if (f && f.date) f.date.value = todayISO();
