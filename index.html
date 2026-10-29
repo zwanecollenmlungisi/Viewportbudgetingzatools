@@ -1,0 +1,3051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ViewportBudgetZAtools — Small Business Budgeting for South Africa</title>
+<!--
+  SETUP
+  1. Run the SQL migration in your Supabase project
+  2. In Supabase → Auth → Providers → Email, disable "Confirm email" for demo
+  3. Replace SUPABASE_URL and SUPABASE_ANON_KEY in the script block below
+  4. Serve over http:// or https:// — file:// breaks redirect URLs
+-->
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0}
+body{font:14px/1.45 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:#f1f5f9;color:#0f172a;-webkit-font-smoothing:antialiased}
+input,select,button{font:inherit}
+input,select{padding:7px 9px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:inherit;min-width:0}
+input:disabled{background:#f1f5f9;color:#94a3b8}
+input:focus,select:focus{outline:2px solid #bfdbfe;outline-offset:1px;border-color:#93c5fd}
+a{color:#007a4d}
+.hidden{display:none!important}
+
+.btn{border:1px solid #cbd5e1;background:#fff;padding:8px 14px;border-radius:9px;cursor:pointer;color:#0f172a;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;transition:.15s}
+.btn:hover{background:#f8fafc}
+.btn.primary{background:#007a4d;border-color:#007a4d;color:#fff;font-weight:600}
+.btn.primary:hover{background:#00663f;border-color:#00663f}
+.btn.ghost{background:transparent;border-color:transparent;color:#334155}
+.btn.ghost:hover{background:#f1f5f9}
+.btn.outline{background:#fff;border-color:#cbd5e1}
+.btn.outline:hover{border-color:#94a3b8;background:#f8fafc}
+.btn.sm{padding:6px 11px;font-size:13px}
+.btn.lg{padding:12px 22px;font-size:15px;border-radius:11px}
+.btn.danger{color:#b91c1c;border-color:#fecaca}
+.btn.danger:hover{background:#fef2f2}
+.btn.block{width:100%}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+
+#site{background:#fff;color:#0f172a}
+.l-wrap{max-width:1140px;margin:0 auto;padding:0 22px}
+.l-nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid #e8eef2}
+.l-nav-in{display:flex;align-items:center;gap:24px;height:70px}
+.l-brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:inherit;flex:none}
+.l-brand .mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#007a4d,#ffb612);display:grid;place-items:center;font-size:19px;box-shadow:0 4px 12px -4px rgba(0,122,77,.5)}
+.l-brand b{font-size:16.5px;letter-spacing:-.02em;display:block;line-height:1.1}
+.l-brand b em{color:#007a4d;font-style:normal}
+.l-brand small{display:block;font-size:10px;color:#64748b;letter-spacing:.09em;text-transform:uppercase;font-weight:700;margin-top:2px}
+.l-links{display:flex;gap:2px;margin-left:auto}
+.l-links a{padding:8px 13px;border-radius:9px;text-decoration:none;color:#475569;font-size:14px;font-weight:500}
+.l-links a:hover{background:#f1f5f9;color:#0f172a}
+.l-nav-cta{display:flex;gap:8px;align-items:center}
+.l-burger{display:none;border:1px solid #e2e8f0;background:#fff;border-radius:9px;width:40px;height:38px;font-size:17px;cursor:pointer;color:#334155}
+.l-mobile{display:none;flex-direction:column;gap:4px;padding:10px 22px 18px;border-top:1px solid #eef2f7}
+.l-mobile a{padding:11px 12px;border-radius:9px;text-decoration:none;color:#334155;font-weight:500}
+.l-mobile a:hover{background:#f1f5f9}
+.l-mobile .btn{margin-top:6px}
+@media (max-width:940px){.l-links,.l-nav-cta{display:none}.l-burger{display:grid;place-items:center;margin-left:auto}.l-mobile.open{display:flex}}
+
+.hero{position:relative;overflow:hidden;padding:64px 0 76px;background:radial-gradient(1000px 520px at 8% -12%,#e6f6ef 0%,transparent 62%),radial-gradient(760px 520px at 100% -6%,#fff3d6 0%,transparent 58%),linear-gradient(#fbfdfc,#fff)}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:54px;align-items:center}
+@media (max-width:960px){.hero-grid{grid-template-columns:1fr;gap:42px}}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #d9e7e0;color:#00663f;padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;box-shadow:0 2px 8px -4px rgba(0,102,63,.3)}
+.hero h1{font-size:clamp(30px,4.4vw,50px);line-height:1.06;letter-spacing:-.035em;margin:20px 0 18px;font-weight:800}
+.hero h1 span{color:#007a4d;position:relative;white-space:nowrap}
+.hero h1 span::after{content:"";position:absolute;left:0;right:0;bottom:4px;height:10px;background:#ffb61233;border-radius:3px;z-index:-1}
+.hero p.lead{font-size:16.5px;line-height:1.6;color:#475569;max-width:530px;margin:0 0 26px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.hero-micro{margin-top:18px;display:flex;flex-wrap:wrap;gap:16px;font-size:12.5px;color:#64748b}
+.hero-micro span{display:flex;align-items:center;gap:6px}
+.hero-micro i{color:#007a4d;font-style:normal;font-weight:800}
+
+.mock{background:#fff;border:1px solid #e2e8f0;border-radius:18px;overflow:hidden;box-shadow:0 36px 70px -40px rgba(15,23,42,.42),0 4px 14px -8px rgba(15,23,42,.12);transform:rotate(-.6deg)}
+.mock-head{display:flex;align-items:center;gap:6px;padding:11px 14px;background:#f8fafc;border-bottom:1px solid #eef2f7}
+.mock-head .dot{width:9px;height:9px;border-radius:50%;background:#e2e8f0}
+.mock-head .dot:nth-child(1){background:#fda4af}.mock-head .dot:nth-child(2){background:#fcd34d}.mock-head .dot:nth-child(3){background:#86efac}
+.mock-title{margin-left:10px;font-size:11.5px;color:#94a3b8;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mock-body{padding:16px}
+.mock-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
+.mock-kpis>div{background:#f8fafc;border:1px solid #eef2f7;border-radius:11px;padding:10px}
+.mock-kpis small{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;font-weight:700}
+.mock-kpis b{display:block;font-size:14.5px;margin:4px 0 3px;letter-spacing:-.02em;white-space:nowrap}
+.mock-kpis i{font-style:normal;font-size:10.5px;font-weight:700}
+.mock-kpis .up{color:#047857}.mock-kpis .dn{color:#b91c1c}
+.mock-chart{display:flex;align-items:flex-end;gap:7px;height:132px;padding:10px 4px 0;border-top:1px dashed #eef2f7}
+.mock-chart .mb{flex:1;height:var(--h);background:linear-gradient(#3aa87a,#007a4d);border-radius:5px 5px 2px 2px;min-height:8px}
+.mock-chart .mb.alt{background:linear-gradient(#fcd34d,#f59e0b)}
+.mock-foot{display:flex;justify-content:space-between;padding:11px 15px;background:#f8fafc;border-top:1px solid #eef2f7;font-size:11px;color:#94a3b8}
+
+.trust{border-top:1px solid #eef2f7;border-bottom:1px solid #eef2f7;background:#fbfdfc;padding:18px 0}
+.trust-in{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 34px;font-size:12.5px;color:#64748b;font-weight:600}
+.trust-in span{display:flex;align-items:center;gap:8px}
+.trust-in b{color:#007a4d}
+
+.sec{padding:78px 0}
+.sec.tint{background:#fbfdfc;border-top:1px solid #eef2f7;border-bottom:1px solid #eef2f7}
+.sec-head{text-align:center;max-width:660px;margin:0 auto 48px}
+.eyebrow{font-size:11.5px;text-transform:uppercase;letter-spacing:.14em;font-weight:800;color:#007a4d;margin-bottom:12px}
+.sec-head h2{font-size:clamp(24px,3.2vw,36px);letter-spacing:-.028em;line-height:1.15;margin:0 0 14px;font-weight:800}
+.sec-head p{margin:0;color:#64748b;font-size:15.5px;line-height:1.6}
+
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media (max-width:900px){.feat-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:620px){.feat-grid{grid-template-columns:1fr}}
+.feat{background:#fff;border:1px solid #e8eef2;border-radius:15px;padding:22px;transition:.18s}
+.feat:hover{border-color:#c9e4d8;box-shadow:0 16px 34px -24px rgba(0,122,77,.5);transform:translateY(-2px)}
+.feat .ico{width:42px;height:42px;border-radius:12px;background:#eaf7f1;display:grid;place-items:center;font-size:19px;margin-bottom:15px}
+.feat h3{margin:0 0 8px;font-size:15.5px;letter-spacing:-.01em}
+.feat p{margin:0;color:#64748b;font-size:13.5px;line-height:1.6}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;counter-reset:s}
+@media (max-width:820px){.steps{grid-template-columns:1fr}}
+.step{position:relative;padding:26px 22px 22px;background:#fff;border:1px solid #e8eef2;border-radius:15px}
+.step::before{counter-increment:s;content:counter(s);position:absolute;top:-16px;left:22px;width:34px;height:34px;border-radius:11px;background:#007a4d;color:#fff;display:grid;place-items:center;font-weight:800;font-size:15px;box-shadow:0 6px 14px -6px rgba(0,122,77,.7)}
+.step h3{margin:8px 0 8px;font-size:15px}
+.step p{margin:0;color:#64748b;font-size:13.5px;line-height:1.6}
+
+.sa-grid{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center}
+@media (max-width:880px){.sa-grid{grid-template-columns:1fr;gap:34px}}
+.sa-list{list-style:none;padding:0;margin:0;display:grid;gap:14px}
+.sa-list li{display:flex;gap:13px;align-items:flex-start}
+.sa-list .tick{flex:none;width:24px;height:24px;border-radius:8px;background:#eaf7f1;color:#007a4d;display:grid;place-items:center;font-size:12px;font-weight:800;margin-top:1px}
+.sa-list b{display:block;font-size:14px;margin-bottom:2px}
+.sa-list span{color:#64748b;font-size:13.5px;line-height:1.55}
+.sa-card{background:linear-gradient(160deg,#0b2a20,#00663f 60%,#00814f);border-radius:18px;padding:28px;color:#fff;box-shadow:0 30px 60px -34px rgba(0,102,63,.75)}
+.sa-card h3{margin:0 0 18px;font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#9fe3c4;font-weight:800}
+.sa-row{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.14);font-size:13.5px}
+.sa-row:last-child{border-bottom:0}
+.sa-row span{color:#b9e8d3}.sa-row b{color:#fff;white-space:nowrap}
+
+.plan-wrap{max-width:580px;margin:0 auto}
+.plan-card{background:#fff;border:2px solid #007a4d;border-radius:22px;padding:34px 32px 30px;box-shadow:0 34px 66px -36px rgba(0,122,77,.55);position:relative}
+.plan-tag{display:inline-block;background:#007a4d;color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;padding:5px 13px;border-radius:999px;margin-bottom:18px}
+.plan-price{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.plan-price b{font-size:clamp(38px,7vw,50px);letter-spacing:-.045em;line-height:1;font-weight:800}
+.plan-price span{font-size:13.5px;color:#64748b;font-weight:600}
+.plan-eq{color:#64748b;font-size:13.5px;margin:12px 0 24px}
+.plan-eq b{color:#0f172a}
+.plan-list{list-style:none;padding:0;margin:0 0 26px;display:grid;grid-template-columns:1fr 1fr;gap:11px 20px}
+@media (max-width:560px){.plan-list{grid-template-columns:1fr}}
+.plan-list li{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:#334155;line-height:1.45}
+.plan-list li::before{content:"✓";color:#007a4d;font-weight:800;flex:none}
+.plan-fine{font-size:11.5px;color:#94a3b8;text-align:center;margin:16px 0 0;line-height:1.6}
+
+.cta-band{background:linear-gradient(120deg,#06231a,#00663f 55%,#00814f);padding:64px 0;color:#fff;text-align:center}
+.cta-band h2{font-size:clamp(24px,3.4vw,36px);letter-spacing:-.03em;margin:0 0 14px;font-weight:800}
+.cta-band p{color:#b9e8d3;max-width:600px;margin:0 auto 28px;font-size:15.5px;line-height:1.6}
+.cta-band .btn.primary{background:#ffb612;border-color:#ffb612;color:#06231a}
+.cta-band .btn.primary:hover{background:#f0a800;border-color:#f0a800}
+.cta-band .btn.outline{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}
+.cta-band .btn.outline:hover{background:rgba(255,255,255,.1)}
+
+.l-foot{background:#08130f;color:#94a3b8;padding:48px 0 26px;font-size:13px}
+.foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:34px;margin-bottom:34px}
+@media (max-width:820px){.foot-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.foot-grid{grid-template-columns:1fr}}
+.l-foot h4{color:#fff;font-size:11.5px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 14px}
+.l-foot a{display:block;color:#94a3b8;text-decoration:none;padding:5px 0}
+.l-foot a:hover{color:#9fe3c4}
+.l-foot .brandline{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.l-foot .brandline .mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#007a4d,#ffb612);display:grid;place-items:center;font-size:17px}
+.l-foot .brandline b{color:#fff;font-size:15px}
+.foot-bottom{border-top:1px solid rgba(255,255,255,.09);padding-top:20px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12px;color:#64748b}
+
+#auth{min-height:100vh;display:grid;place-items:center;padding:44px 20px;background:radial-gradient(900px 520px at 12% -10%,#e6f6ef 0%,transparent 60%),radial-gradient(720px 520px at 100% 0%,#fff3d6 0%,transparent 56%),#f7faf8}
+.auth-card{width:100%;max-width:480px;background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:32px 32px 28px;box-shadow:0 30px 60px -34px rgba(15,23,42,.32)}
+.auth-back{display:inline-flex;align-items:center;gap:7px;color:#64748b;text-decoration:none;font-size:13px;font-weight:600;margin-bottom:20px}
+.auth-back:hover{color:#007a4d}
+.auth-head{margin-bottom:22px}
+.auth-head .mark{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#007a4d,#ffb612);display:grid;place-items:center;font-size:21px;margin-bottom:16px}
+.auth-head h1{margin:0 0 6px;font-size:23px;letter-spacing:-.028em}
+.auth-head p{margin:0;color:#64748b;font-size:13.5px}
+.auth-alert{display:none;gap:9px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:11px 13px;font-size:13px;margin-bottom:16px;line-height:1.45}
+.auth-alert.show{display:flex}
+.auth-alert.ok{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+.fld{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.fld label{font-size:12px;font-weight:700;color:#475569;letter-spacing:.01em}
+.fld input{padding:10px 12px;border-radius:10px}
+.fld .hint{font-size:11.5px;color:#94a3b8}
+.fld .err{font-size:11.5px;color:#dc2626;font-weight:600;display:none}
+.fld.bad input{border-color:#fca5a5;background:#fff7f7}
+.fld.bad .err{display:block}
+.fld-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.fld-row{grid-template-columns:1fr}}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:#475569;margin:4px 0 16px;line-height:1.45;cursor:pointer}
+.chk input{width:16px;height:16px;margin-top:2px;flex:none;accent-color:#007a4d;padding:0}
+.auth-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;font-size:13px;flex-wrap:wrap}
+.auth-actions a{font-weight:600;text-decoration:none}
+.auth-switch{text-align:center;font-size:13.5px;color:#64748b;margin-top:20px;padding-top:20px;border-top:1px solid #eef2f7}
+.auth-switch button{background:none;border:0;color:#007a4d;font-weight:700;cursor:pointer;font-size:13.5px;padding:0}
+.auth-switch button:hover{text-decoration:underline}
+.auth-note{margin-top:16px;font-size:11.5px;color:#94a3b8;text-align:center;line-height:1.55}
+.pw-wrap{position:relative;display:block}
+.pw-wrap input{width:100%;padding-right:44px}
+.pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;cursor:pointer;font-size:15px;padding:5px 8px;border-radius:7px;color:#94a3b8;line-height:1}
+.pw-toggle:hover{background:#f1f5f9;color:#475569}
+.plan-summary{display:flex;align-items:center;justify-content:space-between;gap:14px;background:#f0fdf6;border:1px solid #bbf7d0;border-radius:12px;padding:13px 16px;margin:2px 0 10px}
+.plan-summary b{display:block;font-size:13.5px;color:#065f46}
+.plan-summary span{font-size:12px;color:#059669}
+.plan-summary-price{font-size:21px;font-weight:800;color:#065f46;white-space:nowrap;letter-spacing:-.025em}
+
+#app{display:none}
+.topbar{display:flex;align-items:center;gap:18px;padding:12px 20px;background:#fff;border-bottom:1px solid #e2e8f0;position:sticky;top:0;z-index:20;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#007a4d,#ffb612);display:grid;place-items:center;color:#fff;font-size:18px;flex:none}
+.co{font-weight:700;line-height:1.15}
+.sub{font-size:12px;color:#64748b}
+.tabs{display:flex;gap:2px;flex:1;flex-wrap:wrap}
+.tabs button{border:0;background:transparent;padding:8px 12px;border-radius:9px;cursor:pointer;color:#475569;white-space:nowrap}
+.tabs button:hover{background:#f1f5f9}
+.tabs button.active{background:#e0edff;color:#1d4ed8;font-weight:600}
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.userchip{display:flex;align-items:center;gap:9px;padding-left:12px;border-left:1px solid #e2e8f0}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#007a4d,#009e64);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800;letter-spacing:.02em;flex:none}
+.uname{font-size:13px;font-weight:600;color:#334155;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:780px){.uname{display:none}}
+
+.plan-badge{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 11px;border-radius:999px;background:#eaf7f1;color:#00663f;border:1px solid #c9e4d8;white-space:nowrap}
+.plan-badge.warn{background:#fffbeb;color:#92400e;border-color:#fcd34d}
+.plan-badge.expired{background:#fee2e2;color:#991b1b;border-color:#fecaca}
+.plan-banner{display:none;align-items:center;gap:14px;padding:11px 20px;font-size:13px;border-bottom:1px solid transparent;flex-wrap:wrap}
+.plan-banner.show{display:flex}
+.plan-banner.warn{background:#fffbeb;border-color:#fde68a;color:#92400e}
+.plan-banner.expired{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.plan-banner .grow{flex:1;min-width:200px;line-height:1.5}
+.plan-banner b{font-weight:800}
+
+.periodbar{display:flex;gap:18px;align-items:center;padding:10px 20px;background:#fff;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;font-size:13px}
+.periodbar label{display:flex;align-items:center;gap:7px;color:#475569}
+
+main{padding:20px;max-width:1260px;margin:0 auto}
+.view{display:none}
+.view.active{display:block}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px 18px;margin-bottom:18px}
+.card h3{margin:0 0 14px;font-size:15px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.card-head h3{margin:0}
+.grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+@media(max-width:920px){.grid-2{grid-template-columns:1fr}}
+
+.seg{display:inline-flex;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:8px;cursor:pointer;color:#475569;font-weight:600;font-size:13px;white-space:nowrap}
+.seg button:hover{color:#0f172a}
+.seg button.active{background:#fff;color:#00663f;box-shadow:0 1px 2px rgba(0,0,0,.09)}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px}
+.kpi{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px 16px}
+.kpi-label{font-size:11.5px;color:#64748b;text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.kpi-value{font-size:23px;font-weight:700;margin:6px 0 2px;letter-spacing:-.01em}
+.kpi-value.pos{color:#047857}.kpi-value.neg{color:#b91c1c}
+.kpi-sub{font-size:12px;color:#94a3b8}
+
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid #eef2f7;vertical-align:top}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:#64748b;font-weight:600;white-space:nowrap}
+td.r,th.r{text-align:right;white-space:nowrap}
+tbody tr:hover{background:#f8fafc}
+tr.totrow td{font-weight:700;background:#f8fafc;border-top:1px solid #e2e8f0}
+.empty{color:#94a3b8;text-align:center;padding:22px}
+.pill{background:#eef2ff;color:#3730a3;padding:2px 8px;border-radius:999px;font-size:12px;white-space:nowrap}
+.icon{border:0;background:transparent;color:#cbd5e1;cursor:pointer;font-size:14px;padding:2px 7px;border-radius:6px;line-height:1}
+.icon:hover{background:#fee2e2;color:#dc2626}
+.muted{color:#94a3b8;font-weight:400;font-size:13px}
+.small{font-size:11.5px;color:#94a3b8}
+
+table.sheet{font-size:13px}
+table.sheet th{background:#f8fafc}
+table.sheet td{padding:3px 4px;vertical-align:middle}
+table.sheet td input,table.sheet td select{
+  width:100%;border:1px solid transparent;background:transparent;
+  padding:6px 8px;border-radius:6px;font-size:13px;min-width:80px
+}
+table.sheet td input:hover,table.sheet td select:hover{border-color:#e2e8f0;background:#f8fafc}
+table.sheet td input:focus,table.sheet td select:focus{border-color:#93c5fd;background:#fff;outline:2px solid #bfdbfe;outline-offset:0}
+table.sheet td.num input{text-align:right}
+table.sheet .del{border:0;background:transparent;color:#cbd5e1;cursor:pointer;font-size:13px;padding:4px 7px;border-radius:6px;line-height:1}
+table.sheet .del:hover{background:#fee2e2;color:#dc2626}
+table.sheet tfoot td{font-weight:700;background:#f8fafc;border-top:1px solid #e2e8f0;padding:9px 10px}
+.snapshot-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.snapshot-cell{border:1px solid #eef2f7;border-radius:10px;padding:12px 14px;background:#fafcfb}
+.snapshot-cell .k{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#64748b;font-weight:700;margin-bottom:4px}
+.snapshot-cell .v{font-size:14px;font-weight:600;color:#0f172a;word-break:break-word}
+
+.stmt{font-size:13.5px}
+.stmt td{padding:6px 6px;border-bottom:1px dashed #eef2f7}
+.stmt td.r{width:150px}
+.stmt .sec td{font-weight:700;color:#64748b;font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;padding-top:16px;border-bottom:1px solid #e2e8f0}
+.stmt .tot td{font-weight:600}
+.stmt .rule td{border-top:1px solid #e2e8f0}
+.stmt .strong td{font-weight:700}
+.stmt .grand td{font-weight:800;font-size:15px;border-top:2px solid #0f172a;border-bottom:none;padding-top:10px}
+.stmt td.ind{padding-left:22px;color:#334155}
+
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;align-items:end}
+.form-grid label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#64748b;font-weight:600}
+.form-grid label input,.form-grid label select{width:100%}
+.form-grid button{height:36px}
+
+.chart{width:100%;height:auto;display:block}
+.grid{stroke:#eef2f7;stroke-width:1}
+.axis{fill:#94a3b8;font-size:11px}
+.zero{stroke:#cbd5e1;stroke-width:1}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;margin-top:10px}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block;flex:none}
+.donut-row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.donut-row svg{flex:none;width:170px;height:170px}
+
+.sub-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 26px;margin-bottom:16px}
+@media(max-width:600px){.sub-grid{grid-template-columns:1fr}}
+.sub-grid>div{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px dashed #eef2f7;font-size:13.5px;align-items:center}
+.sub-grid .k{color:#64748b;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em}
+.sub-grid .v{font-weight:600;color:#0f172a;text-align:right}
+
+.bs-check{margin-top:16px;padding:12px 14px;border-radius:10px}
+.bs-check.ok{background:#ecfdf5;border:1px solid #a7f3d0}
+.bs-check.warn{background:#fffbeb;border:1px solid #fde68a}
+.bs-check-row{display:flex;justify-content:space-between;gap:12px;font-size:13px;flex-wrap:wrap}
+.bs-check-row b{font-weight:700}
+.bs-check-note{margin:8px 0 0;font-size:12px;line-height:1.5;color:#92400e}
+
+#boot{position:fixed;inset:0;z-index:9999;background:rgba(255,255,255,.92);display:grid;place-items:center;font-family:system-ui;color:#475569;font-size:14px}
+#boot .spin{width:34px;height:34px;border-radius:50%;border:3px solid #e2e8f0;border-top-color:#007a4d;animation:spin 1s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#print-root{display:none}
+@media print{
+  #site{display:none!important}#app{display:none!important}#boot{display:none!important}
+  #print-root{display:block!important}
+  body{background:#fff}
+  @page{size:A4;margin:14mm}
+  .print-doc{font:11.5px/1.5 system-ui,'Segoe UI',Arial,sans-serif;color:#000}
+  .print-doc .ph{display:flex;justify-content:space-between;gap:24px;border-bottom:3px solid #0f172a;padding-bottom:12px;margin-bottom:18px}
+  .print-doc .ph h1{margin:0 0 4px;font-size:20px;letter-spacing:-.02em}
+  .print-doc .ph .meta{text-align:right;font-size:11px;line-height:1.65;white-space:nowrap}
+  .print-doc .doc-title{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+  .print-doc h2{font-size:12px;text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid #000;padding-bottom:4px;margin:20px 0 10px}
+  .print-doc .section{break-inside:avoid}
+  .print-doc .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:6px}
+  .print-doc .summary div{border:1px solid #999;border-radius:5px;padding:8px 10px}
+  .print-doc .summary b{display:block;font-size:15px;margin-top:2px}
+  .print-doc table{width:100%;border-collapse:collapse;font-size:11px}
+  .print-doc th,.print-doc td{padding:4px 5px;border-bottom:1px solid #ddd;text-align:left}
+  .print-doc th{border-bottom:1.5px solid #000;font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+  .print-doc td.r,.print-doc th.r{text-align:right}
+  .print-doc .tot td{font-weight:700;border-top:1px solid #000}
+  .print-doc .foot{margin-top:22px;border-top:1px solid #999;padding-top:8px;font-size:9.5px;color:#555}
+  .print-doc .basis{font-size:10px;color:#333;border:1px solid #bbb;border-radius:5px;padding:8px 10px;margin-bottom:10px}
+}
+</style>
+</head>
+<body>
+
+<div id="boot"><div style="text-align:center"><div class="spin"></div>Loading BudgetZA…</div></div>
+
+<div id="site" style="display:none">
+  <header class="l-nav">
+    <div class="l-wrap l-nav-in">
+      <a class="l-brand" href="#" data-goto="landing">
+        <span class="mark">💼</span>
+        <span><b>Budget<em>ZA</em></b><small>Small business finance</small></span>
+      </a>
+      <nav class="l-links">
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#sa">Built for SA</a>
+        <a href="#pricing">Pricing</a>
+      </nav>
+      <div class="l-nav-cta">
+        <button class="btn ghost" data-auth="login">Log in</button>
+        <button class="btn primary" data-auth="signup">Get started</button>
+      </div>
+      <button class="l-burger" id="lBurger" aria-label="Open menu">☰</button>
+    </div>
+    <div class="l-mobile" id="lMobile">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#sa">Built for SA</a>
+      <a href="#pricing">Pricing</a>
+      <button class="btn ghost" data-auth="login">Log in</button>
+      <button class="btn primary" data-auth="signup">Get 12 months access</button>
+    </div>
+  </header>
+
+  <div id="landing">
+    <section class="hero">
+      <div class="l-wrap hero-grid">
+        <div>
+          <span class="hero-badge">Viewport budgeting 🇿🇦 tools Built for South African small businesses</span>
+          <h1>Know your numbers. <span>Grow with confidence.</span></h1>
+          <p class="lead">Track daily takings, expenses and assets in one place — then print financial statements prepared on <b>IFRS for SMEs</b>, with SARS-ready VAT and normal tax estimates.</p>
+          <div class="hero-cta">
+            <button class="btn primary lg" data-auth="signup">Get 12 months access →</button>
+            <button class="btn outline lg" data-auth="login">I already have an account</button>
+          </div>
+          <div class="hero-micro">
+            <span><i>✓</i> R 3 850 once-off</span>
+            <span><i>✓</i> 12 months full access</span>
+            <span><i>✓</i> No auto-renewal</span>
+          </div>
+        </div>
+        <div class="mock" aria-hidden="true">
+          <div class="mock-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="mock-title">Acme Studio (Pty) Ltd · Dashboard</span></div>
+          <div class="mock-body">
+            <div class="mock-kpis">
+              <div><small>Revenue</small><b>R 148 200</b><i class="up">▲ 12,4%</i></div>
+              <div><small>Expenses</small><b>R 96 450</b><i class="dn">▼ 3,1%</i></div>
+              <div><small>Profit</small><b>R 51 750</b><i class="up">▲ 18,9%</i></div>
+            </div>
+            <div class="mock-chart">
+              <div class="mb" style="--h:46%"></div><div class="mb alt" style="--h:62%"></div>
+              <div class="mb" style="--h:58%"></div><div class="mb alt" style="--h:78%"></div>
+              <div class="mb" style="--h:70%"></div><div class="mb alt" style="--h:90%"></div>
+              <div class="mb" style="--h:84%"></div><div class="mb alt" style="--h:100%"></div>
+            </div>
+          </div>
+          <div class="mock-foot"><span>Jan – Aug 2026</span><span>IFRS for SMEs</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="trust">
+      <div class="l-wrap trust-in">
+        <span><b>IFRS for SMEs</b> statements</span>
+        <span><b>VAT201</b> summaries</span>
+        <span><b>SBC</b> tax scale</span>
+        <span><b>ZAR</b> formatting</span>
+        <span><b>1 Mar – end Feb</b> tax year</span>
+      </div>
+    </div>
+
+    <section class="sec" id="features">
+      <div class="l-wrap">
+        <div class="sec-head">
+          <div class="eyebrow">Everything in one workspace</div>
+          <h2>Bookkeeping that does the reporting for you</h2>
+          <p>Enter a transaction once and the dashboard, statements, tax estimates and printable report all update instantly.</p>
+        </div>
+        <div class="feat-grid">
+          <div class="feat"><div class="ico">📊</div><h3>Live dashboard</h3><p>Revenue, expenses, profit and cash on hand at a glance, with charts that update as you type.</p></div>
+          <div class="feat"><div class="ico">🧾</div><h3>Daily sales tracking</h3><p>A dedicated daily-income-received column so cash sales and receipts are always visible by date.</p></div>
+          <div class="feat"><div class="ico">📈</div><h3>Daily · weekly · monthly · yearly</h3><p>Switch the tracking granularity in one click. Weeks start Monday, months and years roll up automatically.</p></div>
+          <div class="feat"><div class="ico">🗂️</div><h3>Registers &amp; partners</h3><p>Spreadsheet-style registers for partners, agreements and suppliers, with CSV export and print support.</p></div>
+          <div class="feat"><div class="ico">⚖️</div><h3>Balance sheet</h3><p>Full statement of financial position with automatic balance check, PPE at NBV, and retained earnings.</p></div>
+          <div class="feat"><div class="ico">🖨️</div><h3>Print-ready reports</h3><p>One click produces an A4 pack with statements, registers, daily sales and tax summary.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec tint" id="how">
+      <div class="l-wrap">
+        <div class="sec-head">
+          <div class="eyebrow">How it works</div>
+          <h2>Three steps from shoebox to statements</h2>
+          <p>No imports, no monthly fees, no accountant required to get started.</p>
+        </div>
+        <div class="steps">
+          <div class="step"><h3>Create your account</h3><p>Add your business name, choose whether to start with sample data, and you're in. Each account keeps its own secure workspace.</p></div>
+          <div class="step"><h3>Capture your transactions</h3><p>Log income, expenses, assets, partners and suppliers. Registers work like a spreadsheet — type straight into the cells.</p></div>
+          <div class="step"><h3>Review and print</h3><p>Check the dashboard and tracking views, then print a full financial report with statements, registers, balance sheet and tax summary.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec" id="sa">
+      <div class="l-wrap sa-grid">
+        <div>
+          <div class="eyebrow">Built for South Africa</div>
+          <h2 style="font-size:clamp(24px,3.2vw,34px);letter-spacing:-.028em;margin:0 0 16px;font-weight:800">Local tax rules, not a foreign template</h2>
+          <p style="color:#64748b;font-size:15px;line-height:1.65;margin:0 0 26px">The reporting follows the standards your accountant and SARS actually use — so you spend less time reworking numbers.</p>
+          <ul class="sa-list">
+            <li><span class="tick">✓</span><div><b>IFRS for SMEs (SA GAAP)</b><span>Statement of comprehensive income, statement of financial position and cash flows in the standard SME presentation.</span></div></li>
+            <li><span class="tick">✓</span><div><b>15% VAT, VAT201 basis</b><span>Output and input tax tracked separately, with inclusive or exclusive amount handling.</span></div></li>
+            <li><span class="tick">✓</span><div><b>Small business corporation scale</b><span>0% / 7% / 21% / 28% sliding scale, or a flat company rate if you prefer.</span></div></li>
+            <li><span class="tick">✓</span><div><b>South African tax year</b><span>1 March to end of February, selectable in one click alongside calendar periods.</span></div></li>
+            <li><span class="tick">✓</span><div><b>Rand conventions</b><span>Space thousands separators and comma decimals, so R 12 450,00 reads the way you expect.</span></div></li>
+          </ul>
+        </div>
+        <div class="sa-card">
+          <h3>Quick reference</h3>
+          <div class="sa-row"><span>Standard VAT rate</span><b>15%</b></div>
+          <div class="sa-row"><span>Company tax rate</span><b>27%</b></div>
+          <div class="sa-row"><span>SBC — first bracket</span><b>0% to R 95 750</b></div>
+          <div class="sa-row"><span>SBC — top rate</span><b>28% above R 550 000</b></div>
+          <div class="sa-row"><span>Tax year</span><b>1 Mar – end Feb</b></div>
+          <div class="sa-row"><span>Reporting framework</span><b>IFRS for SMEs</b></div>
+          <div class="sa-row"><span>Currency</span><b>ZAR (R)</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec tint" id="pricing">
+      <div class="l-wrap">
+        <div class="sec-head">
+          <div class="eyebrow">Pricing</div>
+          <h2>One price. Twelve months. Everything included.</h2>
+          <p>Pay once and unlock every premium feature for a full year. No monthly debit orders, no auto-renewal.</p>
+        </div>
+        <div class="plan-wrap">
+          <div class="plan-card">
+            <span class="plan-tag">Annual access</span>
+            <div class="plan-price"><b>R 3 850</b><span>once-off / 12 months</span></div>
+            <p class="plan-eq">That works out to about <b>R 321 per month</b> — but you pay a single time.</p>
+            <ul class="plan-list">
+              <li>Unlimited income &amp; expense entries</li>
+              <li>Daily, weekly, monthly, yearly tracking</li>
+              <li>Partners &amp; suppliers registers</li>
+              <li>IFRS for SMEs statements</li>
+              <li>Balance sheet with balance check</li>
+              <li>VAT201 output &amp; input tax summary</li>
+              <li>SBC &amp; flat-rate normal tax estimate</li>
+              <li>Asset register with IAS 16 depreciation</li>
+              <li>CSV export of every register</li>
+              <li>Print-ready A4 financial report pack</li>
+              <li>Company registration details on reports</li>
+              <li>12 months of full premium access</li>
+            </ul>
+            <button class="btn primary block lg" data-auth="signup">Get 12 months access</button>
+            <p class="plan-fine">R 3 850 once-off, including VAT. Your access period runs for 12 months from activation. No auto-renewal — you choose when to renew.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-band">
+      <div class="l-wrap">
+        <h2>Your books, sorted for the next 12 months</h2>
+        <p>R 3 850 once-off unlocks every premium feature for a full year. Create your account and capture your first transaction in under a minute.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <button class="btn primary lg" data-auth="signup">Get 12 months access</button>
+          <button class="btn outline lg" data-auth="login">Log in</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="l-foot">
+      <div class="l-wrap">
+        <div class="foot-grid">
+          <div>
+            <div class="brandline"><span class="mark">💼</span><b>ViewportBudgetZAtools</b></div>
+            <p style="margin:0;line-height:1.65;max-width:280px">Practical budgeting and reporting for South African small businesses and close corporations.</p>
+          </div>
+          <div><h4>Product</h4><a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#" data-auth="signup">Create account</a></div>
+          <div><h4>Resources</h4><a href="#sa">SA tax quick reference</a><a href="#sa">IFRS for SMEs</a><a href="#sa">VAT201 guide</a><a href="#sa">Asset depreciation</a></div>
+          <div><h4>Account</h4><a href="#" data-auth="login">Log in</a><a href="#" data-auth="signup">Sign up</a><a href="#pricing">Annual plan — R 3 850</a></div>
+        </div>
+        <div class="foot-bottom">
+          <span>© <span id="footYear"></span> ViewportBudgetZAtools. Made for South African small business.</span>
+          <span>Estimates only — confirm tax figures with SARS or a registered tax practitioner.</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <section id="auth">
+    <div class="auth-card">
+      <a class="auth-back" href="#" data-goto="landing">← Back to home</a>
+      <div class="auth-head">
+        <div class="mark">💼</div>
+        <h1 id="authTitle">Welcome back</h1>
+        <p id="authSub">Log in to your budgeting workspace.</p>
+      </div>
+      <div class="auth-alert" id="authAlert"><span id="authAlertIcon">⚠️</span><span id="authAlertText"></span></div>
+
+      <form id="loginForm" novalidate>
+        <div class="fld" id="lgEmailFld">
+          <label for="lgEmail">Email address</label>
+          <input type="email" id="lgEmail" name="email" autocomplete="email" placeholder="you@company.co.za">
+          <span class="err">Please enter a valid email address.</span>
+        </div>
+        <div class="fld" id="lgPwFld">
+          <label for="lgPw">Password</label>
+          <span class="pw-wrap">
+            <input type="password" id="lgPw" name="password" autocomplete="current-password" placeholder="Your password">
+            <button type="button" class="pw-toggle" data-pw="lgPw" aria-label="Show password">👁</button>
+          </span>
+          <span class="err">Please enter your password.</span>
+        </div>
+        <div class="auth-actions">
+          <label class="chk" style="margin:0"><input type="checkbox" name="remember" checked><span>Keep me logged in</span></label>
+          <a href="#" id="forgotLink">Forgot password?</a>
+        </div>
+        <button class="btn primary block lg" type="submit">Log in</button>
+        <div class="auth-switch">New to BudgetZA? <button type="button" data-auth="signup">Create an account</button></div>
+      </form>
+
+      <form id="signupForm" class="hidden" novalidate>
+        <div class="fld-row">
+          <div class="fld" id="suNameFld">
+            <label for="suName">Full name</label>
+            <input type="text" id="suName" name="name" autocomplete="name" placeholder="Thabo Mokoena">
+            <span class="err">Please enter your name.</span>
+          </div>
+          <div class="fld" id="suBizFld">
+            <label for="suBiz">Business name</label>
+            <input type="text" id="suBiz" name="biz" autocomplete="organization" placeholder="Mokoena Trading (Pty) Ltd">
+            <span class="err">Please enter your business name.</span>
+          </div>
+        </div>
+        <div class="fld" id="suEmailFld">
+          <label for="suEmail">Email address</label>
+          <input type="email" id="suEmail" name="email" autocomplete="email" placeholder="you@company.co.za">
+          <span class="err">Please enter a valid email address.</span>
+        </div>
+        <div class="fld-row">
+          <div class="fld" id="suPwFld">
+            <label for="suPw">Password</label>
+            <span class="pw-wrap">
+              <input type="password" id="suPw" name="password" autocomplete="new-password" placeholder="At least 8 characters">
+              <button type="button" class="pw-toggle" data-pw="suPw" aria-label="Show password">👁</button>
+            </span>
+            <span class="hint">Include at least one letter and one number.</span>
+            <span class="err">Password must be 8+ characters with a letter and a number.</span>
+          </div>
+          <div class="fld" id="suPw2Fld">
+            <label for="suPw2">Confirm password</label>
+            <span class="pw-wrap">
+              <input type="password" id="suPw2" name="password2" autocomplete="new-password" placeholder="Repeat password">
+              <button type="button" class="pw-toggle" data-pw="suPw2" aria-label="Show password">👁</button>
+            </span>
+            <span class="err">Passwords do not match.</span>
+          </div>
+        </div>
+
+        <div class="plan-summary">
+          <div><b>Annual access</b><span>12 months of every premium feature</span></div>
+          <div class="plan-summary-price">R 3 850</div>
+        </div>
+        <p class="small" style="margin:0 0 14px">Once-off, including VAT. No auto-renewal. Demo mode: payment is simulated — your account is activated for 12 months from today and no card is charged.</p>
+
+        <label class="chk"><input type="checkbox" name="sample" checked><span>Start with South African sample data so I can explore the dashboard</span></label>
+        <label class="chk" id="suTermsFld"><input type="checkbox" name="terms"><span>I understand this is a bookkeeping tool and that tax figures are estimates only.</span></label>
+        <span class="err" id="suTermsErr" style="display:none;margin:-8px 0 12px">Please tick the box to continue.</span>
+        <button class="btn primary block lg" type="submit">Create my account</button>
+        <div class="auth-switch">Already have an account? <button type="button" data-auth="login">Log in</button></div>
+      </form>
+
+      <p class="auth-note">🔒 Accounts are secured by Supabase Auth. Your financial data is stored in your own isolated database row, protected by Row Level Security.</p>
+    </div>
+  </section>
+</div>
+
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">💼</div>
+      <div>
+        <div class="co" id="topCoName">Your Company</div>
+        <div class="sub" id="topPeriod">—</div>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button data-view="dashboard" class="active">📊 Dashboard</button>
+      <button data-view="tracking">📈 Tracking</button>
+      <button data-view="income">Daily income</button>
+      <button data-view="expenses">Expenses</button>
+      <button data-view="assets">Assets</button>
+      <button data-view="registers">🗂 Registers</button>
+      <button data-view="reports">Reports</button>
+      <button data-view="tax">Tax (SARS)</button>
+      <button data-view="settings">Settings</button>
+    </nav>
+    <div class="actions">
+      <button class="btn primary" id="btnPrint">🖨 Print report</button>
+      <span class="plan-badge" id="planBadge">Annual</span>
+      <div class="userchip">
+        <span class="avatar" id="userAvatar">—</span>
+        <span class="uname" id="userName">—</span>
+        <button class="btn ghost sm" id="btnLogout" title="Log out">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="planBanner" class="plan-banner"></div>
+
+  <div class="periodbar">
+    <label>Period
+      <select id="periodPreset">
+        <option value="month">This month</option>
+        <option value="quarter">This quarter</option>
+        <option value="year">This calendar year</option>
+        <option value="taxyear">SA tax year (1 Mar – end Feb)</option>
+        <option value="all">All time</option>
+        <option value="custom">Custom…</option>
+      </select>
+    </label>
+    <label>From <input type="date" id="periodFrom"></label>
+    <label>To <input type="date" id="periodTo"></label>
+  </div>
+
+  <main>
+    <section id="view-dashboard" class="view active">
+      <div class="kpis" id="kpis"></div>
+      <div class="grid-2">
+        <div class="card"><h3>Income vs expenses</h3><div id="chartBars"></div></div>
+        <div class="card"><h3>Expenses by category</h3><div id="chartDonut"></div></div>
+      </div>
+      <div class="card"><h3>Cash balance trend</h3><div id="chartLine"></div></div>
+      <div class="card">
+        <h3>Daily sales / income received</h3>
+        <div class="table-wrap"><table id="tblDaily"></table></div>
+        <p class="muted" id="dailyNote" style="margin:10px 0 0"></p>
+      </div>
+      <div class="card"><h3>Recent transactions</h3><div class="table-wrap"><table id="tblRecent"></table></div></div>
+    </section>
+
+    <section id="view-tracking" class="view">
+      <div class="kpis" id="trackKpis"></div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Income vs expenses per <span id="trackUnit">day</span></h3>
+          <div class="seg" id="granSeg">
+            <button data-gran="daily">Daily</button>
+            <button data-gran="weekly">Weekly</button>
+            <button data-gran="monthly">Monthly</button>
+            <button data-gran="yearly">Yearly</button>
+          </div>
+        </div>
+        <div id="trackBars"></div>
+        <p class="muted" id="trackChartNote" style="margin:10px 0 0"></p>
+      </div>
+      <div class="card"><h3>Cumulative net cash movement</h3><div id="trackLine"></div></div>
+      <div class="card">
+        <div class="card-head"><h3>Tracking table</h3><span class="small" id="trackNote"></span></div>
+        <div class="table-wrap"><table id="tblTracking"></table></div>
+        <p class="muted" style="margin:10px 0 0">Net cash = income received − expenses paid − asset purchases. Cumulative runs from the first recorded transaction. Weeks start on Monday. This tab tracks <b>all recorded data</b> and is not limited by the period filter.</p>
+      </div>
+    </section>
+
+    <section id="view-income" class="view">
+      <div class="card">
+        <h3>Add income received</h3>
+        <form id="formIncome" class="form-grid">
+          <label>Date<input type="date" name="date" required></label>
+          <label>Description<input name="desc" placeholder="e.g. Invoice #1042 / cash sale" required></label>
+          <label>Category<select name="category" id="incomeCats"></select></label>
+          <label>Amount (R)<input type="number" name="amount" step="0.01" min="0" placeholder="0,00" required></label>
+          <label>Method<select name="method"><option>EFT</option><option>Cash</option><option>Card</option><option>SnapScan / Yoco</option><option>Cheque</option><option>Other</option></select></label>
+          <button class="btn primary" type="submit">+ Add income</button>
+        </form>
+      </div>
+      <div class="card">
+        <h3>Income received <span class="muted" id="incomeTotal"></span></h3>
+        <div class="table-wrap"><table id="tblIncome"></table></div>
+        <p class="muted" style="margin:10px 0 0">The <b>Daily income received</b> column shows the total income received on that day, so daily cash sales and receipts are visible at a glance.</p>
+      </div>
+    </section>
+
+    <section id="view-expenses" class="view">
+      <div class="card">
+        <h3>Add expense</h3>
+        <form id="formExpense" class="form-grid">
+          <label>Date<input type="date" name="date" required></label>
+          <label>Description<input name="desc" placeholder="e.g. Office rent" required></label>
+          <label>Category<select name="category" id="expenseCats"></select></label>
+          <label>Amount (R)<input type="number" name="amount" step="0.01" min="0" placeholder="0,00" required></label>
+          <label>Method<select name="method"><option>EFT</option><option>Cash</option><option>Card</option><option>Debit order</option><option>Cheque</option><option>Other</option></select></label>
+          <button class="btn primary" type="submit">+ Add expense</button>
+        </form>
+      </div>
+      <div class="card"><h3>Expenses <span class="muted" id="expenseTotal"></span></h3><div class="table-wrap"><table id="tblExpenses"></table></div></div>
+    </section>
+
+    <section id="view-assets" class="view">
+      <div class="card">
+        <h3>Register an asset</h3>
+        <form id="formAsset" class="form-grid">
+          <label>Asset name<input name="name" placeholder="e.g. Delivery bakkie" required></label>
+          <label>Category<select name="category" id="assetCats"></select></label>
+          <label>Purchase date<input type="date" name="date" required></label>
+          <label>Cost (R)<input type="number" name="cost" step="0.01" min="0" placeholder="0,00" required></label>
+          <label>Useful life (years)<input type="number" name="life" step="1" min="1" value="5" required></label>
+          <label>Residual value (R)<input type="number" name="salvage" step="0.01" min="0" value="0"></label>
+          <button class="btn primary" type="submit">+ Add asset</button>
+        </form>
+      </div>
+      <div class="card">
+        <h3>Asset register <span class="muted" id="assetTotal"></span></h3>
+        <div class="table-wrap"><table id="tblAssets"></table></div>
+        <p class="muted" style="margin:12px 0 0">Straight-line depreciation (IAS 16 / IFRS for SMEs): (cost − residual value) ÷ (useful life × 12) per month, from the month of purchase.</p>
+      </div>
+    </section>
+
+    <section id="view-registers" class="view">
+      <div class="kpis" id="regKpis"></div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Partners &amp; partner agreements</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn sm" id="btnAddPartner">+ Add partner</button>
+            <button class="btn sm" id="btnExportPartners">⬇ Export CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap"><table class="sheet" id="tblPartners"></table></div>
+        <p class="muted" id="partnerNote" style="margin:10px 0 0"></p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Suppliers &amp; service providers</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn sm" id="btnAddSupplier">+ Add supplier</button>
+            <button class="btn sm" id="btnExportSuppliers">⬇ Export CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap"><table class="sheet" id="tblSuppliers"></table></div>
+        <p class="muted" id="supplierNote" style="margin:10px 0 0"></p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Business snapshot</h3>
+          <button class="btn sm" id="btnExportAll">⬇ Export full workbook (CSV)</button>
+        </div>
+        <div id="snapshot"></div>
+      </div>
+    </section>
+
+    <section id="view-reports" class="view">
+      <div class="card">
+        <h3>Statement of comprehensive income</h3>
+        <div id="stmtIncome"></div>
+        <p class="muted" style="margin:12px 0 0">Prepared on the accrual basis in accordance with IFRS for SMEs (SA GAAP). Depreciation per IAS 16.</p>
+      </div>
+      <div class="card">
+        <h3>Statement of financial position (balance sheet)</h3>
+        <div id="stmtBalance"></div>
+        <p class="muted" style="margin:12px 0 0">As at period end. Prepared in accordance with IFRS for SMEs (SA GAAP). PPE at net book value after straight-line depreciation per IAS 16.</p>
+      </div>
+      <div class="card">
+        <h3>Statement of cash flows</h3>
+        <div id="stmtCash"></div>
+        <p class="muted" style="margin:12px 0 0">Direct-method cash flow presentation per IAS 7. Cash basis: income when received/recorded, expenses when paid, asset purchases as investing outflows.</p>
+      </div>
+    </section>
+
+    <section id="view-tax" class="view">
+      <div class="card"><h3>Value-Added Tax (VAT Act 89 of 1991)</h3><div id="taxVat"></div></div>
+      <div class="card"><h3>Normal tax — SARS estimate</h3><div id="taxIncome"></div></div>
+    </section>
+
+    <section id="view-settings" class="view">
+      <div class="card">
+        <h3>Company details <span class="muted">(used on printed reports)</span></h3>
+        <div class="form-grid">
+          <label>Registered company name<input data-setting="company.name" placeholder="Your Company (Pty) Ltd"></label>
+          <label>Company registration no.<input data-setting="company.regNo" placeholder="2019/123456/07"></label>
+          <label>Business address<input data-setting="company.address" placeholder="Street, Suburb, City, Postal code"></label>
+          <label>Income tax reference no.<input data-setting="company.taxId" placeholder="9012/345678/9"></label>
+          <label>VAT registration no.<input data-setting="company.vatNo" placeholder="4123456789"></label>
+          <label>Phone<input data-setting="company.phone" placeholder="+27 11 000 0000"></label>
+          <label>Email<input data-setting="company.email" placeholder="hello@company.co.za"></label>
+          <label>Currency symbol<input data-setting="company.currency" placeholder="R"></label>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Tax settings</h3>
+        <div class="form-grid">
+          <label>VAT rate (%)<input type="number" data-setting="company.vatRate" step="0.1" min="0" max="100"></label>
+          <label>Flat company tax rate (%)<input type="number" data-setting="company.incomeTaxRate" step="0.1" min="0" max="100"></label>
+          <label style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" data-setting="company.vatEnabled" style="width:auto"> VAT registered</label>
+          <label style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" data-setting="company.vatInclusive" style="width:auto"> Amounts include VAT</label>
+          <label style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" data-setting="company.sbcEnabled" style="width:auto"> Apply small business corporation (SBC) sliding scale</label>
+        </div>
+        <p class="muted" style="margin:12px 0 0">SBC scale: 0% up to R95 750 · 7% to R365 000 · 21% to R550 000 · 28% above. When SBC is switched off, the flat company rate is used. Always confirm current rates with SARS or your accountant.</p>
+      </div>
+
+      <div class="card">
+        <h3>Balance sheet setup <span class="muted">(snapshots at period end)</span></h3>
+        <p class="muted" style="margin:0 0 12px">Manual snapshots for the statement of financial position. Update these whenever the underlying position changes. The balance sheet must satisfy: assets = equity + liabilities.</p>
+        <div class="form-grid">
+          <label>Opening cash at tracking start (R)<input type="number" data-setting="company.openingCash" step="0.01" min="0"></label>
+          <label>Opening retained earnings (R)<input type="number" data-setting="company.openingRetainedEarnings" step="0.01" min="0"></label>
+          <label>Inventory on hand (R)<input type="number" data-setting="company.inventory" step="0.01" min="0"></label>
+          <label>Trade receivables (R)<input type="number" data-setting="company.tradeReceivables" step="0.01" min="0"></label>
+          <label>Trade payables (R)<input type="number" data-setting="company.tradePayables" step="0.01" min="0"></label>
+          <label>Long-term loans (R)<input type="number" data-setting="company.longTermLoans" step="0.01" min="0"></label>
+          <label>Other non-current assets (R)<input type="number" data-setting="company.otherNonCurrentAssets" step="0.01" min="0"></label>
+        </div>
+        <p class="muted" style="margin:12px 0 0">Partner capital is taken from the Registers tab. VAT and income tax payable are calculated from the current period. If the balance check shows a difference, adjust opening cash, opening retained earnings or partner capital first. If you're VAT-registered, note that the tool treats recorded amounts as either net of VAT (exclusive) or gross (inclusive) based on the "Amounts include VAT" setting — reconcile via these fields if needed.</p>
+      </div>
+
+      <div class="card" id="subCard"></div>
+
+      <div class="card">
+        <h3>Data</h3>
+        <p class="muted" style="margin-top:0">Your data is stored securely in your Supabase project. Only you can read or write it thanks to Row Level Security.</p>
+        <button class="btn danger" id="btnClear">Clear all data</button>
+        <button class="btn" id="btnDemo">Reload demo data</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="print-root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL      = 'https://maqcalckhcancgbwqzhh.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hcWNhbGNraGNhbmNnYndxemhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxOTUzNzEsImV4cCI6MjEwODc3MTM3MX0.UhmmB3QOf4BS-SZ3hskA9cZtkkEQQsT7p9Kr1wowWAA';
+
+  const REMEMBER_KEY = 'sbz-remember';
+  const dualStorage = {
+    getItem: (k) => { try { return localStorage.getItem(k) ?? sessionStorage.getItem(k); } catch (e) { return null; } },
+    setItem: (k, v) => {
+      try {
+        if (localStorage.getItem(REMEMBER_KEY) === 'false') { sessionStorage.setItem(k, v); localStorage.removeItem(k); }
+        else { localStorage.setItem(k, v); sessionStorage.removeItem(k); }
+      } catch (e) {}
+    },
+    removeItem: (k) => { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {} }
+  };
+
+  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      storage: dualStorage,
+      storageKey: 'sbz-auth',
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      flowType: 'pkce'
+    }
+  });
+
+  if (SUPABASE_URL.includes('YOUR_') || SUPABASE_ANON_KEY.includes('YOUR_')) {
+    document.addEventListener('DOMContentLoaded', () => {
+      const b = document.createElement('div');
+      b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#fef3c7;border-bottom:2px solid #f59e0b;padding:11px 20px;font-family:system-ui;font-size:13px;color:#78350f;line-height:1.45';
+      b.innerHTML = '<b>⚠️ Supabase not configured.</b> Replace <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> in the script block. Run the SQL migrations first.';
+      document.body.appendChild(b);
+    });
+  }
+</script>
+
+<script>
+/* =====================================================================
+   UTILITIES
+   ===================================================================== */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const uid = () => Math.random().toString(36).slice(2, 9);
+const num = v => { const n = typeof v === 'number' ? v : parseFloat(v); return Number.isFinite(n) ? n : 0; };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+const NB = '\u00A0';
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const parseISO = s => { const [y,m,d] = String(s||'').split('-').map(Number); return new Date(y||1970, (m||1)-1, d||1); };
+const fmtDate = s => s ? parseISO(s).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+const todayISO = () => iso(new Date());
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function grp(n, dp = 2) {
+  const s = Math.abs(num(n)).toFixed(dp);
+  let [i, d] = s.split('.');
+  i = i.replace(/\B(?=(\d{3})+(?!\d))/g, NB);
+  return d ? `${i},${d}` : i;
+}
+function money(n) {
+  n = num(n);
+  const cur = (state && state.company.currency) || 'R';
+  return (n < 0 ? '-' : '') + cur + NB + grp(n, 2);
+}
+function money0(n) {
+  n = num(n);
+  const cur = (state && state.company.currency) || 'R';
+  return (n < 0 ? '-' : '') + cur + NB + grp(n, 0);
+}
+function shortNum(n) {
+  const a = Math.abs(n), s = n < 0 ? '-' : '';
+  if (a >= 1e6) return s + (a/1e6).toFixed(1).replace('.', ',').replace(',0','') + 'm';
+  if (a >= 1e3) return s + Math.round(a/1e3) + 'k';
+  return s + Math.round(a);
+}
+function niceCeil(v) {
+  if (v <= 0) return 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(v)));
+  const n = v / mag;
+  const step = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10;
+  return step * mag;
+}
+function monthsBetween(start, end) {
+  if (end < start) return 0;
+  return (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+}
+function groupSum(list, keyFn) {
+  const m = new Map();
+  list.forEach(x => { const k = keyFn(x); m.set(k, (m.get(k) || 0) + num(x.amount)); });
+  return [...m.entries()].sort((a, b) => b[1] - a[1]);
+}
+function startOfWeek(d) {
+  const day = (d.getDay() + 6) % 7;
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() - day);
+}
+function isoWeekNum(d) {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = (t.getUTCDay() + 6) % 7;
+  t.setUTCDate(t.getUTCDate() - dayNum + 3);
+  const firstThu = new Date(Date.UTC(t.getUTCFullYear(), 0, 4));
+  const fDayNum = (firstThu.getUTCDay() + 6) % 7;
+  firstThu.setUTCDate(firstThu.getUTCDate() - fDayNum + 3);
+  return 1 + Math.round((t - firstThu) / (7 * 864e5));
+}
+function addMonths(isoStr, months) {
+  const d = parseISO(isoStr);
+  const target = new Date(d.getFullYear(), d.getMonth() + months, 1);
+  const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+  target.setDate(Math.min(d.getDate(), lastDay));
+  return iso(target);
+}
+function daysUntil(isoDate) {
+  const end = parseISO(isoDate);
+  const today = parseISO(todayISO());
+  return Math.round((end - today) / 86400000);
+}
+function saSbcTax(profit) {
+  const p = Math.max(0, num(profit));
+  if (p <= 95750) return 0;
+  if (p <= 365000) return 0.07 * (p - 95750);
+  if (p <= 550000) return 18847 + 0.21 * (p - 365000);
+  return 57697 + 0.28 * (p - 550000);
+}
+function saSbcBands(profit) {
+  const p = Math.max(0, num(profit));
+  const bands = [[0, 95750, 0], [95750, 365000, 0.07], [365000, 550000, 0.21], [550000, Infinity, 0.28]];
+  const out = [];
+  bands.forEach(([lo, hi, rate]) => {
+    if (p > lo) {
+      const base = Math.min(p, hi) - lo;
+      out.push({ label: `${money0(lo)} – ${hi === Infinity ? 'above' : money0(hi)}`, rate: rate * 100, base, tax: base * rate });
+    }
+  });
+  return out;
+}
+
+/* =====================================================================
+   SUBSCRIPTION
+   ===================================================================== */
+const PLAN_PRICE  = 3850;
+const PLAN_MONTHS = 12;
+function subStatus(sub) {
+  if (!sub || !sub.end) return { state: 'none', days: 0 };
+  const d = daysUntil(sub.end);
+  if (d < 0) return { state: 'expired', days: d };
+  if (d <= 30) return { state: 'expiring', days: d };
+  return { state: 'active', days: d };
+}
+
+/* =====================================================================
+   AUTH + STATE
+   ===================================================================== */
+let currentUser = null;
+let state = null;
+let booted = false;
+let saveTimer = null;
+let profileSaveTimer = null;
+
+const validEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v || '').trim());
+function initials(s) {
+  const parts = String(s || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'U';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function showLanding() {
+  $('#boot').style.display = 'none';
+  $('#site').style.display = '';
+  $('#app').style.display = 'none';
+  $('#landing').style.display = '';
+  $('#auth').style.display = 'none';
+  window.scrollTo(0, 0);
+}
+function showAuth(mode) {
+  $('#boot').style.display = 'none';
+  $('#site').style.display = '';
+  $('#app').style.display = 'none';
+  $('#landing').style.display = 'none';
+  $('#auth').style.display = '';
+  setAuthMode(mode || 'login');
+  window.scrollTo(0, 0);
+}
+function setAuthMode(mode) {
+  $('#loginForm').classList.toggle('hidden', mode !== 'login');
+  $('#signupForm').classList.toggle('hidden', mode !== 'signup');
+  $('#authTitle').textContent = mode === 'login' ? 'Welcome back' : 'Create your account';
+  $('#authSub').textContent = mode === 'login'
+    ? 'Log in to your budgeting workspace.'
+    : 'R 3 850 once-off — 12 months of full premium access.';
+  clearAlert();
+  $$('.fld').forEach(f => f.classList.remove('bad'));
+}
+function showApp() {
+  $('#boot').style.display = 'none';
+  $('#site').style.display = 'none';
+  $('#app').style.display = '';
+  updateUserChip();
+  ['#formIncome', '#formExpense', '#formAsset'].forEach(sel => {
+    const f = $(sel); if (f && f.date) f.date.value = todayISO();
+  });
+  bootApp();
+}
+function updateUserChip() {
+  if (!currentUser) return;
+  $('#userName').textContent = currentUser.name || currentUser.email || 'User';
+  $('#userAvatar').textContent = initials(currentUser.name || currentUser.email);
+}
+function clearAlert() {
+  const a = $('#authAlert');
+  a.classList.remove('show', 'ok');
+  $('#authAlertText').textContent = '';
+}
+function alertAuth(msg, ok) {
+  const a = $('#authAlert');
+  a.classList.add('show');
+  a.classList.toggle('ok', !!ok);
+  $('#authAlertIcon').textContent = ok ? '✓' : '⚠️';
+  $('#authAlertText').textContent = msg;
+}
+function markBad(id, bad) {
+  const f = document.getElementById(id);
+  if (f) f.classList.toggle('bad', !!bad);
+}
+
+function profileToCompany(p) {
+  p = p || {};
+  return {
+    name: p.company_name || '', regNo: p.company_reg_no || '', address: p.company_address || '',
+    taxId: p.tax_id || '', vatNo: p.vat_no || '', phone: p.phone || '', email: p.email || '',
+    currency: p.currency || 'R',
+    incomeTaxRate: num(p.income_tax_rate) || 27, vatRate: num(p.vat_rate) || 15,
+    vatEnabled: !!p.vat_enabled, vatInclusive: !!p.vat_inclusive, sbcEnabled: p.sbc_enabled !== false,
+    openingCash:              num(p.opening_cash),
+    openingRetainedEarnings:  num(p.opening_retained_earnings),
+    inventory:                num(p.inventory),
+    tradeReceivables:         num(p.trade_receivables),
+    tradePayables:            num(p.trade_payables),
+    longTermLoans:            num(p.long_term_loans),
+    otherNonCurrentAssets:    num(p.other_non_current_assets)
+  };
+}
+function profileToSubscription(p) {
+  if (!p || !p.subscription_end) return null;
+  return {
+    plan: 'annual', amount: num(p.subscription_amount) || PLAN_PRICE, currency: 'ZAR',
+    start: p.subscription_start, end: p.subscription_end,
+    reference: p.subscription_reference || '—',
+    renewals: Array.isArray(p.subscription_renewals) ? p.subscription_renewals : []
+  };
+}
+function profileToCurrentUser(authUser, profile) {
+  return {
+    id: authUser.id, email: authUser.email,
+    name: (profile && profile.full_name) || (authUser.email || '').split('@')[0],
+    profile: profile || {}, subscription: profileToSubscription(profile)
+  };
+}
+async function fetchProfile(userId) {
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+  if (error) { console.error('fetchProfile', error); return null; }
+  return data;
+}
+
+/* ---------- signup ---------- */
+async function doSignup(e) {
+  e.preventDefault();
+  clearAlert();
+  const f = e.target;
+  const name   = f.name.value.trim();
+  const biz    = f.biz.value.trim();
+  const email  = f.email.value.trim().toLowerCase();
+  const pw     = f.password.value;
+  const pw2    = f.password2.value;
+  const sample = f.sample.checked;
+  const terms  = f.terms.checked;
+
+  let ok = true;
+  if (name.length < 2)   { markBad('suNameFld', true);  ok = false; } else markBad('suNameFld', false);
+  if (biz.length < 2)    { markBad('suBizFld', true);   ok = false; } else markBad('suBizFld', false);
+  if (!validEmail(email)){ markBad('suEmailFld', true); ok = false; } else markBad('suEmailFld', false);
+  const pwOk = pw.length >= 8 && /[A-Za-z]/.test(pw) && /\d/.test(pw);
+  if (!pwOk)             { markBad('suPwFld', true);    ok = false; } else markBad('suPwFld', false);
+  if (pw !== pw2)        { markBad('suPw2Fld', true);   ok = false; } else markBad('suPw2Fld', false);
+  $('#suTermsErr').style.display = terms ? 'none' : '';
+
+  if (!ok)    return alertAuth('Please check the highlighted fields and try again.');
+  if (!terms) return alertAuth('Please tick the box to continue.');
+
+  const btn = f.querySelector('button[type="submit"]');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Creating account…';
+
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email, password: pw,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: { full_name: name, company_name: biz }
+      }
+    });
+
+    if (error) {
+      if (/already registered|already exists|user already/i.test(error.message)) {
+        markBad('suEmailFld', true);
+        return alertAuth('An account with that email already exists. Try logging in instead.');
+      }
+      return alertAuth(error.message);
+    }
+    if (!data.user) return alertAuth('Signup failed — please try again.');
+    if (!data.session) {
+      f.reset();
+      return alertAuth('Check your email to confirm your account, then log in. Tip: disable email confirmation in Supabase → Authentication → Providers → Email for a smoother demo.', true);
+    }
+
+    const start     = todayISO();
+    const end       = addMonths(start, PLAN_MONTHS);
+    const reference = 'BZA-' + Date.now().toString(36).toUpperCase();
+
+    await supabase.from('profiles').update({
+      subscription_start: start, subscription_end: end,
+      subscription_amount: PLAN_PRICE, subscription_reference: reference,
+      subscription_renewals: []
+    }).eq('id', data.user.id);
+
+    if (sample) {
+      const seed = seedState();
+      seed.company.name  = biz;
+      seed.company.email = email;
+      await supabase.from('financial_data').update({
+        incomes: seed.incomes, expenses: seed.expenses, assets: seed.assets,
+        partners: seed.partners, suppliers: seed.suppliers,
+        period: seed.period, ui: seed.ui
+      }).eq('user_id', data.user.id);
+      // Persist opening balances from seed
+      await supabase.from('profiles').update({
+        opening_cash: seed.company.openingCash,
+        opening_retained_earnings: seed.company.openingRetainedEarnings
+      }).eq('id', data.user.id);
+    }
+
+    f.reset();
+    const profile = await fetchProfile(data.user.id);
+    currentUser = profileToCurrentUser(data.user, profile);
+    showApp();
+  } catch (err) {
+    console.error(err);
+    alertAuth('Unexpected error during signup. Please try again.');
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+}
+
+/* ---------- login ---------- */
+async function doLogin(e) {
+  e.preventDefault();
+  clearAlert();
+  const f = e.target;
+  const email    = f.email.value.trim().toLowerCase();
+  const pw       = f.password.value;
+  const remember = f.remember.checked;
+  try { localStorage.setItem(REMEMBER_KEY, remember ? 'true' : 'false'); } catch (err) {}
+
+  markBad('lgEmailFld', !validEmail(email));
+  markBad('lgPwFld', !pw);
+  if (!validEmail(email) || !pw) return alertAuth('Please enter your email address and password.');
+
+  const btn = f.querySelector('button[type="submit"]');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Logging in…';
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: pw });
+    if (error) {
+      if (/invalid login|invalid.*credentials|invalid password/i.test(error.message)) {
+        markBad('lgPwFld', true);
+        return alertAuth('That password is incorrect. Please try again.');
+      }
+      if (/email not confirmed/i.test(error.message)) {
+        return alertAuth('Please confirm your email address first — check your inbox for the verification link.');
+      }
+      return alertAuth(error.message);
+    }
+    f.reset();
+    const profile = await fetchProfile(data.user.id);
+    currentUser = profileToCurrentUser(data.user, profile);
+    showApp();
+  } catch (err) {
+    console.error(err);
+    alertAuth('Unexpected error during login. Please try again.');
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+}
+
+/* ---------- logout (with flush) ---------- */
+async function logout() {
+  // Flush any pending debounced writes BEFORE tearing down state
+  try { await flushSave(); } catch (err) { console.error('flush on logout', err); }
+  try {
+    clearTimeout(profileSaveTimer);
+    await pushProfileToSupabase();
+  } catch (err) { console.error('profile flush on logout', err); }
+
+  try { await supabase.auth.signOut(); } catch (err) { console.error(err); }
+  currentUser = null; state = null; booted = false;
+  clearTimeout(saveTimer); clearTimeout(profileSaveTimer);
+  ['#formIncome', '#formExpense', '#formAsset'].forEach(sel => { const f = $(sel); if (f) f.reset(); });
+  $$('.fld').forEach(f => f.classList.remove('bad'));
+  clearAlert();
+  showLanding();
+}
+
+/* ---------- auth state (deferred to avoid deadlock) ---------- */
+supabase.auth.onAuthStateChange((event, session) => {
+  // Defer async work off the auth callback to avoid the documented deadlock
+  setTimeout(async () => {
+    if (event === 'SIGNED_OUT' || !session || !session.user) {
+      if (event === 'INITIAL_SESSION') showLanding();
+      return;
+    }
+    const profile = await fetchProfile(session.user.id);
+    currentUser = profileToCurrentUser(session.user, profile);
+    showApp();
+  }, 0);
+});
+
+// Failsafe: if Supabase is unreachable, drop to landing after 3 s
+setTimeout(() => {
+  const boot = document.getElementById('boot');
+  const site = document.getElementById('site');
+  if (boot && site && boot.style.display !== 'none' && site.style.display === 'none') {
+    showLanding();
+  }
+}, 3000);
+
+/* =====================================================================
+   STATE PERSISTENCE
+   ===================================================================== */
+async function loadState() {
+  if (!currentUser) return null;
+  const { data, error } = await supabase
+    .from('financial_data')
+    .select('incomes, expenses, assets, partners, suppliers, period, ui')
+    .eq('user_id', currentUser.id)
+    .maybeSingle();
+
+  if (error) { console.error('loadState', error); return null; }
+  if (!data) return null;
+
+  return {
+    company: profileToCompany(currentUser.profile),
+    incomes: data.incomes || [],
+    expenses: data.expenses || [],
+    assets: data.assets || [],
+    partners: data.partners || [],
+    suppliers: data.suppliers || [],
+    period: data.period || { preset: 'taxyear', from: '', to: '' },
+    ui: data.ui || { view: 'dashboard', trackGran: 'daily' }
+  };
+}
+
+function saveState() {
+  if (!currentUser || !state) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(pushStateToSupabase, 600);
+}
+
+async function pushStateToSupabase() {
+  if (!currentUser || !state) return;
+  const { error } = await supabase.from('financial_data').upsert({
+    user_id: currentUser.id,
+    incomes: state.incomes,
+    expenses: state.expenses,
+    assets: state.assets,
+    partners: state.partners,
+    suppliers: state.suppliers,
+    period: state.period,
+    ui: state.ui,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'user_id' });
+  if (error) console.error('pushStateToSupabase', error);
+}
+
+async function flushSave() {
+  clearTimeout(saveTimer);
+  await pushStateToSupabase();
+}
+
+function saveProfile() {
+  if (!currentUser || !state) return;
+  clearTimeout(profileSaveTimer);
+  profileSaveTimer = setTimeout(pushProfileToSupabase, 600);
+}
+
+async function pushProfileToSupabase() {
+  if (!currentUser || !state) return;
+  const co = state.company;
+  const patch = {
+    company_name:    co.name,
+    company_reg_no:  co.regNo,
+    company_address: co.address,
+    tax_id:          co.taxId,
+    vat_no:          co.vatNo,
+    phone:           co.phone,
+    email:           co.email,
+    currency:        co.currency,
+    income_tax_rate: num(co.incomeTaxRate),
+    vat_rate:        num(co.vatRate),
+    vat_enabled:     !!co.vatEnabled,
+    vat_inclusive:   !!co.vatInclusive,
+    sbc_enabled:     !!co.sbcEnabled,
+    opening_cash:              num(co.openingCash),
+    opening_retained_earnings: num(co.openingRetainedEarnings),
+    inventory:                 num(co.inventory),
+    trade_receivables:         num(co.tradeReceivables),
+    trade_payables:            num(co.tradePayables),
+    long_term_loans:           num(co.longTermLoans),
+    other_non_current_assets:  num(co.otherNonCurrentAssets)
+  };
+  const { error } = await supabase.from('profiles').update(patch).eq('id', currentUser.id);
+  if (error) { console.error('pushProfileToSupabase', error); return; }
+  currentUser.profile = { ...(currentUser.profile || {}), ...patch };
+}
+
+async function renewSubscription() {
+  if (!currentUser) return;
+  const sub       = currentUser.subscription;
+  const start     = (sub && sub.start) || todayISO();
+  const base      = (sub && daysUntil(sub.end) > 0) ? sub.end : todayISO();
+  const newEnd    = addMonths(base, PLAN_MONTHS);
+  const reference = (sub && sub.reference && sub.reference !== '—') ? sub.reference : 'BZA-' + Date.now().toString(36).toUpperCase();
+  const renewals  = ((sub && sub.renewals) || []).concat([{ date: todayISO(), amount: PLAN_PRICE, end: newEnd }]);
+
+  const { error } = await supabase.from('profiles').update({
+    subscription_start: start, subscription_end: newEnd,
+    subscription_amount: PLAN_PRICE, subscription_reference: reference,
+    subscription_renewals: renewals
+  }).eq('id', currentUser.id);
+
+  if (error) { alert('Could not renew: ' + error.message); return; }
+  currentUser.profile = { ...(currentUser.profile || {}), subscription_start: start, subscription_end: newEnd, subscription_amount: PLAN_PRICE, subscription_reference: reference, subscription_renewals: renewals };
+  currentUser.subscription = { plan: 'annual', amount: PLAN_PRICE, currency: 'ZAR', start, end: newEnd, reference, renewals };
+  render();
+  alert('Access renewed for 12 months (demo — no payment taken).\nNew expiry: ' + fmtDate(newEnd));
+}
+
+/* =====================================================================
+   DATA MODEL
+   ===================================================================== */
+const CATEGORIES = {
+  income:  ['Sales', 'Services', 'Grants', 'Interest', 'Other income'],
+  expense: ['Cost of sales', 'Payroll', 'Rent', 'Utilities', 'Marketing', 'Office', 'Travel', 'Professional fees', 'Insurance', 'Other'],
+  asset:   ['IT equipment', 'Motor vehicle', 'Furniture', 'Plant & machinery', 'Leasehold improvements', 'Other']
+};
+const SUPPLIER_CATS = ['Materials', 'Services', 'IT', 'Logistics', 'Utilities', 'Rent', 'Professional', 'Banking', 'Insurance', 'Other'];
+const COLORS = ['#007a4d','#0891b2','#2563eb','#d97706','#dc2626','#7c3aed','#db2777','#65a30d','#475569'];
+
+function emptyState() {
+  return {
+    company: {
+      name: '', regNo: '', address: '', taxId: '', vatNo: '', phone: '', email: '',
+      currency: 'R', incomeTaxRate: 27, vatRate: 15,
+      vatEnabled: false, vatInclusive: false, sbcEnabled: true,
+      openingCash: 0, openingRetainedEarnings: 0,
+      inventory: 0, tradeReceivables: 0, tradePayables: 0,
+      longTermLoans: 0, otherNonCurrentAssets: 0
+    },
+    incomes: [], expenses: [], assets: [],
+    partners: [], suppliers: [],
+    period: { preset: 'taxyear', from: '', to: '' },
+    ui: { view: 'dashboard', trackGran: 'daily' }
+  };
+}
+
+function monthsAgo(n) {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth() - n, 15);
+}
+
+function seedState() {
+  const st = emptyState();
+  st.company = {
+    name: 'Acme Studio (Pty) Ltd',
+    regNo: '2019/482011/07',
+    address: '12 Market Street, Braamfontein, Johannesburg, 2001',
+    taxId: '9012/345678/9',
+    vatNo: '4820119076',
+    phone: '+27 11 010 2233',
+    email: 'hello@acmestudio.co.za',
+    currency: 'R',
+    incomeTaxRate: 27, vatRate: 15,
+    vatEnabled: true, vatInclusive: false, sbcEnabled: true,
+    openingCash: 100000, openingRetainedEarnings: 0,
+    inventory: 0, tradeReceivables: 0, tradePayables: 0,
+    longTermLoans: 0, otherNonCurrentAssets: 0
+  };
+
+  for (let i = 5; i >= 0; i--) {
+    const base = monthsAgo(i);
+    const d = day => iso(new Date(base.getFullYear(), base.getMonth(), day));
+    st.incomes.push({ id: uid(), date: d(3),  desc: 'Cash sales — walk-in customers', category: 'Sales',    amount: 1800 + Math.round(Math.random()*1400), method: 'Cash' });
+    st.incomes.push({ id: uid(), date: d(12), desc: 'Client invoice batch',          category: 'Services', amount: 15000 + Math.round(Math.random()*4000), method: 'EFT' });
+    st.incomes.push({ id: uid(), date: d(22), desc: 'Online store sales',            category: 'Sales',    amount: 4000 + Math.round(Math.random()*3000),  method: 'Card' });
+    st.expenses.push({ id: uid(), date: d(5),  desc: 'Office rent',                   category: 'Rent',      amount: 4200, method: 'EFT' });
+    st.expenses.push({ id: uid(), date: d(15), desc: 'Team payroll',                  category: 'Payroll',   amount: 9000, method: 'EFT' });
+    st.expenses.push({ id: uid(), date: d(18), desc: 'Software subscriptions',        category: 'Office',    amount: 620,  method: 'Card' });
+    st.expenses.push({ id: uid(), date: d(20), desc: 'Social media ad campaign',      category: 'Marketing', amount: 1500, method: 'Card' });
+  }
+
+  st.assets.push({ id: uid(), name: 'MacBook Pro (design)',   date: iso(monthsAgo(2)), cost: 3200,  life: 4, salvage: 200,  category: 'IT equipment' });
+  st.assets.push({ id: uid(), name: 'Delivery bakkie (used)', date: iso(monthsAgo(3)), cost: 12000, life: 6, salvage: 3000, category: 'Motor vehicle' });
+  st.assets.push({ id: uid(), name: 'Office furniture',       date: iso(monthsAgo(4)), cost: 4500,  life: 8, salvage: 0,    category: 'Furniture' });
+
+  st.partners = [
+    { id: uid(), name: 'Thabo Mokoena', idNumber: '8501015800083', ownership: 60, capital: 60000,
+      role: 'Managing director', email: 'thabo@acmestudio.co.za', phone: '+27 82 555 0100',
+      agreementDate: '2019-04-01', agreementRef: 'PA-2019-01', notes: 'Founding partner' },
+    { id: uid(), name: 'Naledi Dlamini', idNumber: '9002150123081', ownership: 40, capital: 40000,
+      role: 'Operations director', email: 'naledi@acmestudio.co.za', phone: '+27 83 555 0111',
+      agreementDate: '2021-07-15', agreementRef: 'PA-2021-02', notes: 'Bought in 2021 — 40% stake' }
+  ];
+
+  st.suppliers = [
+    { id: uid(), name: 'Sage Accounting', category: 'IT', contact: 'Support team',
+      email: 'support@sage.co.za', phone: '+27 86 123 4567', vatNo: '4123456789',
+      terms: 'Monthly debit order', bankDetails: 'Standard Bank · 012345678 · 051001', notes: 'Accounting software' },
+    { id: uid(), name: 'City Power', category: 'Utilities', contact: 'Billing',
+      email: 'billing@citypower.co.za', phone: '+27 11 490 7000', vatNo: '4123456790',
+      terms: '30 days', bankDetails: 'FNB · 62012345678 · 250655', notes: 'Electricity' },
+    { id: uid(), name: 'WeWork Braamfontein', category: 'Rent', contact: 'Building manager',
+      email: 'braam@wework.co.za', phone: '+27 11 555 0199', vatNo: '4123456791',
+      terms: 'Monthly in advance', bankDetails: 'ABSA · 4051234567 · 632005', notes: 'Office space' }
+  ];
+
+  return st;
+}
+
+/* =====================================================================
+   PERIOD
+   ===================================================================== */
+const P = () => state.period;
+const inP = d => d >= P().from && d <= P().to;
+
+function applyPreset(preset) {
+  const now = new Date();
+  let from, to;
+  if (preset === 'month') {
+    from = new Date(now.getFullYear(), now.getMonth(), 1);
+    to   = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  } else if (preset === 'quarter') {
+    const q = Math.floor(now.getMonth() / 3);
+    from = new Date(now.getFullYear(), q * 3, 1);
+    to   = new Date(now.getFullYear(), q * 3 + 3, 0);
+  } else if (preset === 'year') {
+    from = new Date(now.getFullYear(), 0, 1);
+    to   = new Date(now.getFullYear(), 11, 31);
+  } else if (preset === 'taxyear') {
+    const startYear = now.getMonth() >= 2 ? now.getFullYear() : now.getFullYear() - 1;
+    from = new Date(startYear, 2, 1);
+    to   = new Date(startYear + 1, 2, 0);
+  } else if (preset === 'all') {
+    const dates = [...state.incomes, ...state.expenses].map(t => t.date).sort();
+    from = dates.length ? parseISO(dates[0]) : now;
+    to   = dates.length ? parseISO(dates[dates.length - 1]) : now;
+  } else { return; }
+  state.period.preset = preset;
+  state.period.from = iso(from);
+  state.period.to   = iso(to);
+}
+
+function monthsInPeriod(p) {
+  const from = parseISO(p.from), to = parseISO(p.to);
+  const raw = [];
+  let d = new Date(from.getFullYear(), from.getMonth(), 1), guard = 0;
+  while (d <= to && guard++ < 300) {
+    raw.push({ y: d.getFullYear(), m: d.getMonth() });
+    d = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+  }
+  if (!raw.length) raw.push({ y: from.getFullYear(), m: from.getMonth() });
+  const spansYears = new Set(raw.map(r => r.y)).size > 1;
+  return raw.map(r => ({
+    ...r,
+    key: `${r.y}-${String(r.m + 1).padStart(2, '0')}`,
+    label: new Date(r.y, r.m, 1).toLocaleString('en', { month: 'short' }) + (spansYears ? ` '${String(r.y).slice(2)}` : '')
+  }));
+}
+
+/* =====================================================================
+   CALCULATION
+   ===================================================================== */
+function depInPeriod(asset, p) {
+  const cost = num(asset.cost), salvage = num(asset.salvage), life = num(asset.life) || 1;
+  const monthly = (cost - salvage) / (life * 12);
+  if (monthly <= 0) return 0;
+  const start = parseISO(asset.date);
+  const pFrom = parseISO(p.from), pTo = parseISO(p.to);
+  const from = start > pFrom ? start : pFrom;
+  if (from > pTo) return 0;
+  const totalMonths = life * 12;
+  const alreadyTaken = monthsBetween(start, from);
+  if (alreadyTaken >= totalMonths) return 0;
+  const inPeriod = monthsBetween(from, pTo) + 1;
+  const months = Math.min(inPeriod, totalMonths - alreadyTaken);
+  return Math.max(0, months) * monthly;
+}
+
+function cashBefore(dateStr) {
+  let bal = num(state.company.openingCash) || 0;
+  state.incomes.forEach(t  => { if (t.date < dateStr) bal += num(t.amount); });
+  state.expenses.forEach(t => { if (t.date < dateStr) bal -= num(t.amount); });
+  state.assets.forEach(a   => { if (a.date < dateStr) bal -= num(a.cost); });
+  return bal;
+}
+
+function compute() {
+  const p = P();
+  const inc = state.incomes.filter(t => inP(t.date));
+  const exp = state.expenses.filter(t => inP(t.date));
+  const revenue  = inc.reduce((a, t) => a + num(t.amount), 0);
+  const cogs     = exp.filter(e => e.category === 'Cost of sales').reduce((a, t) => a + num(t.amount), 0);
+  const opex     = exp.filter(e => e.category !== 'Cost of sales').reduce((a, t) => a + num(t.amount), 0);
+  const totalExp = cogs + opex;
+  const dep    = state.assets.reduce((a, x) => a + depInPeriod(x, p), 0);
+  const gross  = revenue - cogs;
+  const ebitda = gross - opex;
+  const ebit   = ebitda - dep;
+  const taxable = Math.max(0, ebit);
+  const taxRate = num(state.company.incomeTaxRate) / 100;
+  const tax = state.company.sbcEnabled ? saSbcTax(taxable) : taxable * taxRate;
+  const net = ebit - tax;
+  const assetBuys = state.assets.filter(a => inP(a.date)).reduce((a, x) => a + num(x.cost), 0);
+  const netOps    = revenue - totalExp;
+  const netInv    = -assetBuys;
+  const netFin    = 0;
+  const netChange = netOps + netInv + netFin;
+  const openCash  = cashBefore(p.from);
+  const closeCash = openCash + netChange;
+  return {
+    revenue, cogs, opex, totalExp, dep, gross, ebitda, ebit, tax, net, taxRate, taxable,
+    assetBuys, netOps, netInv, netFin, netChange, openCash, closeCash,
+    incCount: inc.length, expCount: exp.length
+  };
+}
+
+/* Net book value of an asset as at a specific date */
+function nbvAsOf(asset, dateStr) {
+  const cost = num(asset.cost), salvage = num(asset.salvage), life = num(asset.life) || 1;
+  const monthly = (cost - salvage) / (life * 12);
+  if (monthly <= 0) return cost;
+  const start = parseISO(asset.date);
+  const ref = parseISO(dateStr);
+  if (ref < start) return cost;
+  const elapsed = monthsBetween(start, ref);
+  const totalMonths = life * 12;
+  const accum = Math.min(cost - salvage, Math.max(0, elapsed * monthly));
+  return cost - accum;
+}
+
+/* Cumulative profit from the earliest tracking point up to a given date */
+function allTimeProfitToDate(toDate) {
+  const inc = state.incomes.filter(t => t.date <= toDate);
+  const exp = state.expenses.filter(t => t.date <= toDate);
+  const revenue = inc.reduce((a, t) => a + num(t.amount), 0);
+  const cogs    = exp.filter(e => e.category === 'Cost of sales').reduce((a, t) => a + num(t.amount), 0);
+  const opex    = exp.filter(e => e.category !== 'Cost of sales').reduce((a, t) => a + num(t.amount), 0);
+  const dep     = state.assets.reduce((a, x) => a + depInPeriod(x, { from: '1900-01-01', to: toDate }), 0);
+  const ebit    = revenue - cogs - opex - dep;
+  const taxable = Math.max(0, ebit);
+  const tax     = state.company.sbcEnabled ? saSbcTax(taxable) : taxable * num(state.company.incomeTaxRate) / 100;
+  return ebit - tax;
+}
+
+/* Full Statement of Financial Position calculation */
+function computeBalanceSheet() {
+  const p = P();
+  const toDate = p.to;
+  const c = compute();
+
+  /* Assets */
+  const ppeNbv = state.assets
+    .filter(a => a.date <= toDate)
+    .reduce((sum, a) => sum + nbvAsOf(a, toDate), 0);
+  const otherNCA    = num(state.company.otherNonCurrentAssets);
+  const inventory   = num(state.company.inventory);
+  const receivables = num(state.company.tradeReceivables);
+  const cash        = c.closeCash;
+
+  const nonCurrentAssets = ppeNbv + otherNCA;
+  const currentAssets    = inventory + receivables + cash;
+  const totalAssets      = nonCurrentAssets + currentAssets;
+
+  /* Equity */
+  const partnerCapital = (state.partners || []).reduce((s, pr) => s + num(pr.capital), 0);
+  const openingRE      = num(state.company.openingRetainedEarnings);
+  const retainedEarnings = openingRE + allTimeProfitToDate(toDate);
+  const totalEquity      = partnerCapital + retainedEarnings;
+
+  /* Liabilities */
+  const longTermLoans = num(state.company.longTermLoans);
+  const tradePayables = num(state.company.tradePayables);
+
+  const vatRate = num(state.company.vatRate) / 100;
+  const vatFactor = state.company.vatInclusive ? 1 / (1 + vatRate) : 1;
+  const vatPayable = state.company.vatEnabled
+    ? (c.revenue * vatRate * vatFactor) - (c.totalExp * vatRate * vatFactor)
+    : 0;
+  const taxPayable = c.tax;
+
+  const currentLiabilities = tradePayables + Math.max(0, vatPayable) + Math.max(0, taxPayable);
+  const totalLiabilities   = longTermLoans + currentLiabilities;
+
+  const totalEquityLiabilities = totalEquity + totalLiabilities;
+  const difference             = totalAssets - totalEquityLiabilities;
+
+  return {
+    ppeNbv, otherNCA, inventory, receivables, cash,
+    nonCurrentAssets, currentAssets, totalAssets,
+    partnerCapital, openingRE, retainedEarnings, totalEquity,
+    longTermLoans, tradePayables, vatPayable, taxPayable,
+    currentLiabilities, totalLiabilities,
+    totalEquityLiabilities, difference
+  };
+}
+
+function dailyRows() {
+  const map = new Map();
+  const get = d => { if (!map.has(d)) map.set(d, { date: d, count: 0, income: 0, expense: 0 }); return map.get(d); };
+  state.incomes.filter(t => inP(t.date)).forEach(t => { const r = get(t.date); r.count += 1; r.income += num(t.amount); });
+  state.expenses.filter(t => inP(t.date)).forEach(t => { get(t.date).expense += num(t.amount); });
+  return [...map.values()].sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function buildBuckets(gran) {
+  const dates = [...state.incomes.map(t => t.date), ...state.expenses.map(t => t.date), ...state.assets.map(a => a.date)].filter(Boolean).sort();
+  if (!dates.length) return [];
+  const first = parseISO(dates[0]);
+  const last  = parseISO(dates[dates.length - 1]);
+  const spansYears = first.getFullYear() !== last.getFullYear();
+  const ySuffix = d => spansYears ? ` '${String(d.getFullYear()).slice(2)}` : '';
+  const list = [];
+  if (gran === 'daily') {
+    let d = new Date(first.getFullYear(), first.getMonth(), first.getDate()), guard = 0;
+    while (d <= last && guard++ < 5000) {
+      list.push({ key: iso(d), label: `${d.getDate()} ${MONTHS[d.getMonth()]}${ySuffix(d)}`, range: fmtDate(iso(d)) });
+      d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+    }
+  } else if (gran === 'weekly') {
+    let d = startOfWeek(first), guard = 0;
+    while (d <= last && guard++ < 800) {
+      const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 6);
+      list.push({
+        key: iso(d),
+        label: `W${isoWeekNum(d)}${spansYears ? ` '${String(d.getFullYear()).slice(2)}` : ''}`,
+        range: `${d.getDate()} ${MONTHS[d.getMonth()]} – ${end.getDate()} ${MONTHS[end.getMonth()]} ${end.getFullYear()}`
+      });
+      d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7);
+    }
+  } else if (gran === 'monthly') {
+    let d = new Date(first.getFullYear(), first.getMonth(), 1), guard = 0;
+    while (d <= last && guard++ < 400) {
+      list.push({
+        key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+        label: `${MONTHS[d.getMonth()]}${spansYears ? ` '${String(d.getFullYear()).slice(2)}` : ''}`,
+        range: `${MONTHS[d.getMonth()]} ${d.getFullYear()}`
+      });
+      d = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+    }
+  } else {
+    for (let y = first.getFullYear(); y <= last.getFullYear(); y++) {
+      list.push({ key: String(y), label: String(y), range: String(y) });
+    }
+  }
+  const byKey = new Map(list.map(b => [b.key, b]));
+  list.forEach(b => { b.income = 0; b.expense = 0; b.assets = 0; b.count = 0; });
+  const find = dateStr => {
+    if (!dateStr) return null;
+    if (gran === 'daily')   return byKey.get(dateStr);
+    if (gran === 'weekly')  return byKey.get(iso(startOfWeek(parseISO(dateStr))));
+    if (gran === 'monthly') return byKey.get(dateStr.slice(0, 7));
+    return byKey.get(dateStr.slice(0, 4));
+  };
+  state.incomes.forEach(t => { const b = find(t.date); if (!b) return; b.income += num(t.amount); b.count += 1; });
+  state.expenses.forEach(t => { const b = find(t.date); if (b) b.expense += num(t.amount); });
+  state.assets.forEach(a => { const b = find(a.date); if (b) b.assets += num(a.cost); });
+  let run = 0;
+  list.forEach(b => { b.net = b.income - b.expense - b.assets; run += b.net; b.cum = run; });
+  return list;
+}
+
+function sumRange(fromISO, toISO) {
+  const s = { inc: 0, exp: 0, ast: 0, count: 0 };
+  state.incomes.forEach(t => { if (t.date >= fromISO && t.date <= toISO) { s.inc += num(t.amount); s.count += 1; } });
+  state.expenses.forEach(t => { if (t.date >= fromISO && t.date <= toISO) s.exp += num(t.amount); });
+  state.assets.forEach(a => { if (a.date >= fromISO && a.date <= toISO) s.ast += num(a.cost); });
+  s.net = s.inc - s.exp - s.ast;
+  return s;
+}
+
+/* =====================================================================
+   CHARTS
+   ===================================================================== */
+function barChartSVG(series) {
+  const W = 680, H = 270, L = 58, R = 14, T = 16, B = 38;
+  const iw = W - L - R, ih = H - T - B;
+  const max = niceCeil(Math.max(1, ...series.flatMap(d => [d.income, d.expense])));
+  const slot = iw / series.length;
+  const bw = Math.max(6, Math.min(26, slot * 0.32));
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Income versus expenses">`;
+  for (let i = 0; i <= 4; i++) {
+    const y = T + ih - (ih * i / 4);
+    s += `<line class="grid" x1="${L}" y1="${y}" x2="${W - R}" y2="${y}"/>`;
+    s += `<text class="axis" x="${L - 8}" y="${y + 4}" text-anchor="end">${shortNum(max * i / 4)}</text>`;
+  }
+  series.forEach((d, i) => {
+    const cx = L + slot * i + slot / 2;
+    const hi = (d.income / max) * ih;
+    const he = (d.expense / max) * ih;
+    s += `<rect x="${cx - bw - 2}" y="${T + ih - hi}" width="${bw}" height="${Math.max(0, hi)}" rx="3" fill="#007a4d"><title>${esc(d.label)} income: ${esc(money(d.income))}</title></rect>`;
+    s += `<rect x="${cx + 2}" y="${T + ih - he}" width="${bw}" height="${Math.max(0, he)}" rx="3" fill="#f97316"><title>${esc(d.label)} expenses: ${esc(money(d.expense))}</title></rect>`;
+    s += `<text class="axis" x="${cx}" y="${H - B + 20}" text-anchor="middle">${esc(d.label)}</text>`;
+  });
+  s += `<line class="zero" x1="${L}" y1="${T + ih}" x2="${W - R}" y2="${T + ih}"/>`;
+  s += `</svg>`;
+  return s;
+}
+function donutSVG(items, total) {
+  const r = 58, C = 2 * Math.PI * r;
+  let off = 0;
+  let s = `<svg viewBox="0 0 160 160" role="img" aria-label="Expenses by category">`;
+  if (!items.length) {
+    s += `<circle cx="80" cy="80" r="${r}" fill="none" stroke="#eef2f7" stroke-width="26"/>`;
+  } else {
+    items.forEach(it => {
+      const len = (it.value / total) * C;
+      s += `<circle cx="80" cy="80" r="${r}" fill="none" stroke="${it.color}" stroke-width="26" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}" transform="rotate(-90 80 80)"/>`;
+      off += len;
+    });
+  }
+  s += `<text x="80" y="76" text-anchor="middle" style="font-size:11px;fill:#94a3b8">Total</text>`;
+  s += `<text x="80" y="93" text-anchor="middle" style="font-size:13px;font-weight:700;fill:#0f172a">${esc(shortNum(total))}</text>`;
+  s += `</svg>`;
+  return s;
+}
+function lineChartSVG(points) {
+  const W = 680, H = 230, L = 64, R = 16, T = 16, B = 36;
+  const iw = W - L - R, ih = H - T - B;
+  const vals = points.map(p => p.value);
+  const min = Math.min(0, ...vals);
+  const max = Math.max(1, ...vals);
+  const span = (max - min) || 1;
+  const X = i => points.length === 1 ? L + iw / 2 : L + (iw * i) / (points.length - 1);
+  const Y = v => T + ih - ((v - min) / span) * ih;
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Cumulative net cash movement">`;
+  for (let i = 0; i <= 4; i++) {
+    const v = min + span * i / 4;
+    const y = Y(v);
+    s += `<line class="grid" x1="${L}" y1="${y}" x2="${W - R}" y2="${y}"/>`;
+    s += `<text class="axis" x="${L - 8}" y="${y + 4}" text-anchor="end">${shortNum(v)}</text>`;
+  }
+  if (min < 0 && max > 0) s += `<line class="zero" x1="${L}" y1="${Y(0)}" x2="${W - R}" y2="${Y(0)}"/>`;
+  const pts = points.map((p, i) => `${X(i)},${Y(p.value)}`);
+  if (pts.length > 1) {
+    s += `<path d="M${pts.join(' L')} L${X(points.length - 1)},${T + ih} L${X(0)},${T + ih} Z" fill="rgba(0,122,77,.10)"/>`;
+    s += `<polyline points="${pts.join(' ')}" fill="none" stroke="#007a4d" stroke-width="2.5" stroke-linejoin="round"/>`;
+  }
+  points.forEach((p, i) => {
+    s += `<circle cx="${X(i)}" cy="${Y(p.value)}" r="3.5" fill="#007a4d"><title>${esc(p.label)}: ${esc(money(p.value))}</title></circle>`;
+    s += `<text class="axis" x="${X(i)}" y="${H - B + 20}" text-anchor="middle">${esc(p.label)}</text>`;
+  });
+  s += `</svg>`;
+  return s;
+}
+
+/* =====================================================================
+   STATEMENT ROWS
+   ===================================================================== */
+function incomeStatementRows(c) {
+  const rows = [];
+  const add = (label, value, opt = {}) => rows.push({ label, value, ...opt });
+  const inc = state.incomes.filter(t => inP(t.date));
+  const exp = state.expenses.filter(t => inP(t.date));
+  add('Revenue', null, { section: true });
+  groupSum(inc, t => t.category).forEach(([k, v]) => add(k, v, { indent: true }));
+  add('Total revenue', c.revenue, { total: true, rule: true });
+  add('Cost of sales', -c.cogs, { total: true });
+  add('Gross profit', c.gross, { total: true, strong: true, rule: true });
+  add('Operating expenses', null, { section: true });
+  groupSum(exp.filter(e => e.category !== 'Cost of sales'), t => t.category).forEach(([k, v]) => add(k, -v, { indent: true }));
+  add('Depreciation', -c.dep, { indent: true });
+  add('Total operating expenses and depreciation', -(c.opex + c.dep), { total: true, rule: true });
+  add('Operating profit', c.ebit, { total: true, strong: true });
+  add('Finance costs', 0, { indent: true });
+  add('Profit before taxation', c.ebit, { total: true, strong: true, rule: true });
+  add('Taxation', -c.tax, { indent: true });
+  add('Profit for the period', c.net, { grand: true });
+  return rows;
+}
+function cashFlowRows(c) {
+  const rows = [];
+  const add = (label, value, opt = {}) => rows.push({ label, value, ...opt });
+  add('Cash flows from operating activities', null, { section: true });
+  add('Cash receipts from customers', c.revenue, { indent: true });
+  add('Cash paid to suppliers and employees', -c.totalExp, { indent: true });
+  add('Cash generated from operations', c.netOps, { total: true, strong: true });
+  add('Taxation paid', 0, { indent: true });
+  add('Net cash from operating activities', c.netOps, { total: true, strong: true, rule: true });
+  add('Cash flows from investing activities', null, { section: true });
+  add('Acquisition of property, plant and equipment', -c.assetBuys, { indent: true });
+  add('Net cash from investing activities', c.netInv, { total: true, strong: true, rule: true });
+  add('Cash flows from financing activities', null, { section: true });
+  add('Net cash from financing activities', c.netFin, { total: true, strong: true, rule: true });
+  add('Net increase / (decrease) in cash and cash equivalents', c.netChange, { total: true, strong: true });
+  add('Cash and cash equivalents at beginning of period', c.openCash, { indent: true });
+  add('Cash and cash equivalents at end of period', c.closeCash, { grand: true });
+  return rows;
+}
+function balanceSheetRows(b) {
+  const rows = [];
+  const add = (label, value, opt = {}) => rows.push({ label, value, ...opt });
+
+  add('Assets', null, { section: true });
+  add('Non-current assets', null, { section: true });
+  add('Property, plant and equipment', b.ppeNbv, { indent: true });
+  if (b.otherNCA) add('Other non-current assets', b.otherNCA, { indent: true });
+  add('Total non-current assets', b.nonCurrentAssets, { total: true, rule: true });
+
+  add('Current assets', null, { section: true });
+  add('Inventories', b.inventory, { indent: true });
+  add('Trade and other receivables', b.receivables, { indent: true });
+  add('Cash and cash equivalents', b.cash, { indent: true });
+  add('Total current assets', b.currentAssets, { total: true, rule: true });
+  add('Total assets', b.totalAssets, { grand: true });
+
+  add('Equity and liabilities', null, { section: true });
+  add('Equity', null, { section: true });
+  add('Partner capital', b.partnerCapital, { indent: true });
+  add('Retained earnings', b.retainedEarnings, { indent: true });
+  add('Total equity', b.totalEquity, { total: true, rule: true });
+
+  add('Liabilities', null, { section: true });
+  add('Non-current liabilities', null, { section: true });
+  add('Long-term borrowings', b.longTermLoans, { indent: true });
+  add('Total non-current liabilities', b.longTermLoans, { total: true, rule: true });
+
+  add('Current liabilities', null, { section: true });
+  add('Trade and other payables', b.tradePayables, { indent: true });
+  add('VAT payable', Math.max(0, b.vatPayable), { indent: true });
+  add('Income tax payable', Math.max(0, b.taxPayable), { indent: true });
+  add('Total current liabilities', b.currentLiabilities, { total: true, rule: true });
+  add('Total liabilities', b.totalLiabilities, { total: true, strong: true });
+  add('Total equity and liabilities', b.totalEquityLiabilities, { grand: true });
+
+  return rows;
+}
+function stmtHTML(rows) {
+  return `<table class="stmt"><tbody>${rows.map(r => {
+    if (r.section) return `<tr class="sec"><td colspan="2">${esc(r.label)}</td></tr>`;
+    const cls = [r.total && 'tot', r.strong && 'strong', r.grand && 'grand', r.rule && 'rule'].filter(Boolean).join(' ');
+    return `<tr class="${cls}"><td class="${r.indent ? 'ind' : ''}">${esc(r.label)}</td><td class="r">${r.value == null ? '' : money(r.value)}</td></tr>`;
+  }).join('')}</tbody></table>`;
+}
+
+/* =====================================================================
+   RENDER
+   ===================================================================== */
+function render() {
+  if (!state || !currentUser) return;
+  $('#topCoName').textContent = state.company.name || 'Your Company';
+  $('#topPeriod').textContent = `${fmtDate(P().from)} – ${fmtDate(P().to)}`;
+  renderPlanStatus();
+  const view = state.ui.view || 'dashboard';
+  $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
+  $$('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  $('.periodbar').style.display = (view === 'tracking' || view === 'registers') ? 'none' : '';
+  if (view === 'dashboard') renderDashboard();
+  if (view === 'tracking')  renderTracking();
+  if (view === 'income')    renderIncome();
+  if (view === 'expenses')  renderExpenses();
+  if (view === 'assets')    renderAssets();
+  if (view === 'registers') renderRegisters();
+  if (view === 'reports')   { renderReports(); renderBalanceSheet(); }
+  if (view === 'tax')       renderTax();
+  if (view === 'settings')  renderSettings();
+}
+
+function renderPlanStatus() {
+  const badge = $('#planBadge');
+  const banner = $('#planBanner');
+  if (!badge || !banner) return;
+  const sub = currentUser && currentUser.subscription;
+  if (!sub) {
+    badge.classList.add('hidden');
+    banner.classList.remove('show', 'warn', 'expired');
+    return;
+  }
+  const st = subStatus(sub);
+  badge.classList.remove('hidden', 'warn', 'expired');
+  banner.classList.remove('show', 'warn', 'expired');
+  if (st.state === 'active') {
+    badge.textContent = `Annual · ${st.days}d`;
+    badge.title = `Annual access — valid until ${fmtDate(sub.end)}`;
+  } else if (st.state === 'expiring') {
+    badge.classList.add('warn');
+    badge.textContent = `Expires in ${st.days}d`;
+    badge.title = `Access expires ${fmtDate(sub.end)}`;
+    banner.classList.add('show', 'warn');
+    banner.innerHTML = `<span>⏳</span><span class="grow">Your 12-month access expires in <b>${st.days} day${st.days === 1 ? '' : 's'}</b> (${fmtDate(sub.end)}). Renew once-off for <b>${money0(PLAN_PRICE)}</b> to avoid interruption.</span><button class="btn sm" id="bannerRenew">Renew access</button>`;
+  } else if (st.state === 'expired') {
+    badge.classList.add('expired');
+    badge.textContent = 'Expired';
+    badge.title = `Access expired ${fmtDate(sub.end)}`;
+    banner.classList.add('show', 'expired');
+    banner.innerHTML = `<span>🔒</span><span class="grow">Your 12-month access expired on <b>${fmtDate(sub.end)}</b>. Renew once-off for <b>${money0(PLAN_PRICE)}</b> to continue with full premium features.</span><button class="btn primary sm" id="bannerRenew">Renew access — ${money0(PLAN_PRICE)}</button>`;
+  }
+  const btn = $('#bannerRenew');
+  if (btn) btn.addEventListener('click', renewSubscription);
+}
+
+function renderDashboard() {
+  const c = compute();
+  $('#kpis').innerHTML = [
+    { label: 'Revenue', value: money(c.revenue), cls: '', sub: `${c.incCount} receipts` },
+    { label: 'Expenses', value: money(c.totalExp), cls: '', sub: `incl. ${money(c.cogs)} cost of sales` },
+    { label: 'Profit for the period', value: money(c.net), cls: c.net >= 0 ? 'pos' : 'neg', sub: `margin ${c.revenue ? (c.net / c.revenue * 100).toFixed(1) : '0.0'}%` },
+    { label: 'Cash on hand', value: money(c.closeCash), cls: c.closeCash >= 0 ? 'pos' : 'neg', sub: `change ${money(c.netChange)}` }
+  ].map(x => `<div class="kpi"><div class="kpi-label">${x.label}</div><div class="kpi-value ${x.cls}">${x.value}</div><div class="kpi-sub">${x.sub}</div></div>`).join('');
+
+  const months = monthsInPeriod(P());
+  const idx = new Map(months.map((m, i) => [m.key, i]));
+  const series = months.map(m => ({ label: m.label, income: 0, expense: 0, invest: 0 }));
+  state.incomes.filter(t => inP(t.date)).forEach(t => { const i = idx.get(t.date.slice(0, 7)); if (i != null) series[i].income += num(t.amount); });
+  state.expenses.filter(t => inP(t.date)).forEach(t => { const i = idx.get(t.date.slice(0, 7)); if (i != null) series[i].expense += num(t.amount); });
+  state.assets.filter(a => inP(a.date)).forEach(a => { const i = idx.get(a.date.slice(0, 7)); if (i != null) series[i].invest += num(a.cost); });
+
+  $('#chartBars').innerHTML = barChartSVG(series) + `<div class="legend"><span><i style="background:#007a4d"></i>Income</span><span><i style="background:#f97316"></i>Expenses</span></div>`;
+
+  const byCat = {};
+  state.expenses.filter(t => inP(t.date)).forEach(t => { byCat[t.category] = (byCat[t.category] || 0) + num(t.amount); });
+  const items = Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([label, value], i) => ({ label, value, color: COLORS[i % COLORS.length] }));
+  const total = items.reduce((a, b) => a + b.value, 0);
+  $('#chartDonut').innerHTML = items.length
+    ? `<div class="donut-row">${donutSVG(items, total)}<div class="legend" style="flex-direction:column;gap:7px;margin:0">${items.map(it => `<span><i style="background:${it.color}"></i>${esc(it.label)}<b style="margin-left:auto;padding-left:14px">${money(it.value)}</b></span>`).join('')}</div></div>`
+    : `<p class="muted">No expenses recorded in this period.</p>`;
+
+  let run = c.openCash;
+  const cashSeries = series.map(s => { run += s.income - s.expense - s.invest; return { label: s.label, value: run }; });
+  $('#chartLine').innerHTML = lineChartSVG(cashSeries);
+  renderDailyTable();
+
+  const recent = [
+    ...state.incomes.filter(t => inP(t.date)).map(t => ({ ...t, kind: 'in' })),
+    ...state.expenses.filter(t => inP(t.date)).map(t => ({ ...t, kind: 'out' }))
+  ].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8);
+  $('#tblRecent').innerHTML = `
+    <thead><tr><th>Date</th><th>Description</th><th>Category</th><th class="r">Amount</th></tr></thead>
+    <tbody>${recent.length ? recent.map(t => `<tr><td>${fmtDate(t.date)}</td><td>${esc(t.desc)}</td><td><span class="pill">${esc(t.category)}</span></td><td class="r" style="color:${t.kind === 'in' ? '#047857' : '#b91c1c'};font-weight:600">${t.kind === 'in' ? '+' : '−'}${money(t.amount)}</td></tr>`).join('') : `<tr><td colspan="4" class="empty">No transactions in this period.</td></tr>`}</tbody>`;
+}
+
+function renderDailyTable() {
+  const rows = dailyRows();
+  const shown = rows.slice(0, 31);
+  const totInc = rows.reduce((a, r) => a + r.income, 0);
+  const totExp = rows.reduce((a, r) => a + r.expense, 0);
+  $('#tblDaily').innerHTML = `
+    <thead><tr><th>Date</th><th class="r">Receipts</th><th class="r">Income received</th><th class="r">Expenses paid</th><th class="r">Net cash for day</th></tr></thead>
+    <tbody>${shown.length ? shown.map(r => {
+      const net = r.income - r.expense;
+      return `<tr><td>${fmtDate(r.date)}</td><td class="r">${r.count || '—'}</td><td class="r">${money(r.income)}</td><td class="r">${money(r.expense)}</td><td class="r" style="font-weight:600;color:${net >= 0 ? '#047857' : '#b91c1c'}">${money(net)}</td></tr>`;
+    }).join('') : `<tr><td colspan="5" class="empty">No daily activity in this period.</td></tr>`}
+    ${shown.length ? `<tr class="totrow"><td>Total (period)</td><td class="r">${rows.reduce((a, r) => a + r.count, 0)}</td><td class="r">${money(totInc)}</td><td class="r">${money(totExp)}</td><td class="r">${money(totInc - totExp)}</td></tr>` : ''}</tbody>`;
+  $('#dailyNote').textContent = rows.length
+    ? (rows.length > 31 ? `Showing the latest 31 of ${rows.length} active days.` : `${rows.length} active day(s) in the period.`)
+    : '';
+}
+
+const GRAN_UNIT = { daily: 'day', weekly: 'week', monthly: 'month', yearly: 'year' };
+
+function renderTracking() {
+  const gran = state.ui.trackGran || 'daily';
+  $$('#granSeg button').forEach(b => b.classList.toggle('active', b.dataset.gran === gran));
+  $('#trackUnit').textContent = GRAN_UNIT[gran];
+
+  const now = new Date();
+  const monday = startOfWeek(now);
+  const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
+  const monthStart = iso(new Date(now.getFullYear(), now.getMonth(), 1));
+  const monthEnd   = iso(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+  const yearStart  = `${now.getFullYear()}-01-01`;
+  const yearEnd    = `${now.getFullYear()}-12-31`;
+  const cards = [
+    ['Today', todayISO(), todayISO()],
+    ['This week (Mon–Sun)', iso(monday), iso(sunday)],
+    ['This month', monthStart, monthEnd],
+    ['This year', yearStart, yearEnd]
+  ];
+  $('#trackKpis').innerHTML = cards.map(([label, from, to]) => {
+    const s = sumRange(from, to);
+    return `<div class="kpi"><div class="kpi-label">${label}</div><div class="kpi-value">${money(s.inc)}</div><div class="kpi-sub">Net ${money(s.net)} · ${money(s.exp)} out · ${s.count} receipts</div></div>`;
+  }).join('');
+
+  const buckets = buildBuckets(gran);
+  if (!buckets.length) {
+    $('#trackBars').innerHTML = `<p class="muted">No transactions recorded yet. Add income or expenses to start tracking.</p>`;
+    $('#trackLine').innerHTML = '';
+    $('#tblTracking').innerHTML = `<tbody><tr><td class="empty">Nothing to track yet.</td></tr></tbody>`;
+    $('#trackNote').textContent = '';
+    $('#trackChartNote').textContent = '';
+    return;
+  }
+  const chartBuckets = buckets.slice(-12);
+  $('#trackBars').innerHTML = barChartSVG(chartBuckets.map(b => ({ label: b.label, income: b.income, expense: b.expense }))) +
+    `<div class="legend"><span><i style="background:#007a4d"></i>Income received</span><span><i style="background:#f97316"></i>Expenses paid</span></div>`;
+  $('#trackChartNote').textContent = buckets.length > 12 ? `Showing the most recent 12 of ${buckets.length} ${GRAN_UNIT[gran]}s.` : `${buckets.length} ${GRAN_UNIT[gran]}${buckets.length === 1 ? '' : 's'} shown.`;
+
+  const lineBuckets = buckets.slice(-24);
+  $('#trackLine').innerHTML = lineChartSVG(lineBuckets.map(b => ({ label: b.label, value: b.cum }))) +
+    `<div class="legend"><span><i style="background:#007a4d"></i>Cumulative net cash since first transaction</span></div>`;
+
+  const LIMIT = 40;
+  const showAssets = buckets.some(b => b.assets > 0);
+  const shown = buckets.slice(-LIMIT).reverse();
+  const totInc = buckets.reduce((a, b) => a + b.income, 0);
+  const totExp = buckets.reduce((a, b) => a + b.expense, 0);
+  const totAst = buckets.reduce((a, b) => a + b.assets, 0);
+  const totNet = buckets.reduce((a, b) => a + b.net, 0);
+  const netColor = v => v >= 0 ? '#047857' : '#b91c1c';
+
+  $('#tblTracking').innerHTML = `
+    <thead><tr><th>${GRAN_UNIT[gran].replace(/^./, c => c.toUpperCase())}</th><th class="r">Receipts</th><th class="r">Income received</th><th class="r">Expenses paid</th>${showAssets ? '<th class="r">Asset purchases</th>' : ''}<th class="r">Net cash</th><th class="r">Cumulative</th></tr></thead>
+    <tbody>${shown.map(b => `<tr>
+      <td><div style="font-weight:600">${esc(b.range)}</div><div class="small">${esc(b.label)}</div></td>
+      <td class="r">${b.count || '—'}</td>
+      <td class="r">${money(b.income)}</td>
+      <td class="r">${money(b.expense)}</td>
+      ${showAssets ? `<td class="r">${b.assets ? money(b.assets) : '—'}</td>` : ''}
+      <td class="r" style="font-weight:600;color:${netColor(b.net)}">${money(b.net)}</td>
+      <td class="r" style="color:${netColor(b.cum)}">${money(b.cum)}</td>
+    </tr>`).join('')}
+    <tr class="totrow"><td>Total (all data)</td><td class="r">${buckets.reduce((a, b) => a + b.count, 0)}</td><td class="r">${money(totInc)}</td><td class="r">${money(totExp)}</td>${showAssets ? `<td class="r">${money(totAst)}</td>` : ''}<td class="r">${money(totNet)}</td><td class="r">${money(buckets[buckets.length - 1].cum)}</td></tr>
+    </tbody>`;
+  $('#trackNote').textContent = buckets.length > LIMIT ? `Showing the most recent ${LIMIT} of ${buckets.length} ${GRAN_UNIT[gran]}s` : `${buckets.length} ${GRAN_UNIT[gran]}${buckets.length === 1 ? '' : 's'}`;
+}
+
+function renderIncome() {
+  const list = state.incomes.filter(t => inP(t.date)).sort((a, b) => b.date.localeCompare(a.date));
+  const total = list.reduce((a, t) => a + num(t.amount), 0);
+  const dayTotals = new Map();
+  list.forEach(t => dayTotals.set(t.date, (dayTotals.get(t.date) || 0) + num(t.amount)));
+  $('#incomeTotal').textContent = `— ${money(total)} · ${list.length} receipts`;
+  $('#tblIncome').innerHTML = `
+    <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Method</th><th class="r">Amount</th><th class="r">Daily income received</th><th></th></tr></thead>
+    <tbody>${list.length ? list.map(t => `<tr>
+      <td>${fmtDate(t.date)}</td><td>${esc(t.desc)}</td><td><span class="pill">${esc(t.category)}</span></td><td>${esc(t.method || '—')}</td>
+      <td class="r">${money(t.amount)}</td>
+      <td class="r" title="Total income received on this day" style="font-weight:600;color:#047857">${money(dayTotals.get(t.date))}</td>
+      <td class="r"><button class="icon" data-del="incomes" data-id="${t.id}" title="Delete">✕</button></td>
+    </tr>`).join('') : `<tr><td colspan="7" class="empty">No income recorded in this period.</td></tr>`}</tbody>`;
+}
+
+function renderExpenses() {
+  const list = state.expenses.filter(t => inP(t.date)).sort((a, b) => b.date.localeCompare(a.date));
+  const total = list.reduce((a, t) => a + num(t.amount), 0);
+  $('#expenseTotal').textContent = `— ${money(total)}`;
+  $('#tblExpenses').innerHTML = `
+    <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Method</th><th class="r">Amount</th><th></th></tr></thead>
+    <tbody>${list.length ? list.map(t => `<tr>
+      <td>${fmtDate(t.date)}</td><td>${esc(t.desc)}</td><td><span class="pill">${esc(t.category)}</span></td><td>${esc(t.method || '—')}</td>
+      <td class="r">${money(t.amount)}</td>
+      <td class="r"><button class="icon" data-del="expenses" data-id="${t.id}" title="Delete">✕</button></td>
+    </tr>`).join('') : `<tr><td colspan="6" class="empty">No expenses recorded in this period.</td></tr>`}</tbody>`;
+}
+
+function assetValuation(a) {
+  const cost = num(a.cost), salvage = num(a.salvage), life = num(a.life) || 1;
+  const monthly = (cost - salvage) / (life * 12);
+  const elapsed = Math.max(0, monthsBetween(parseISO(a.date), new Date()));
+  const accum = Math.min(cost - salvage, Math.max(0, elapsed * monthly));
+  return { monthly, accum, nbv: cost - accum };
+}
+
+function renderAssets() {
+  const list = state.assets.slice().sort((a, b) => a.date.localeCompare(b.date));
+  const totalNbv = list.reduce((sum, a) => sum + assetValuation(a).nbv, 0);
+  $('#assetTotal').textContent = `— net book value ${money(totalNbv)}`;
+  $('#tblAssets').innerHTML = `
+    <thead><tr><th>Asset</th><th>Category</th><th>Purchased</th><th class="r">Cost</th><th class="r">Life</th><th class="r">Monthly dep.</th><th class="r">Accum. dep.</th><th class="r">Net book value</th><th></th></tr></thead>
+    <tbody>${list.length ? list.map(a => {
+      const v = assetValuation(a);
+      return `<tr>
+        <td>${esc(a.name)}</td><td><span class="pill">${esc(a.category)}</span></td><td>${fmtDate(a.date)}</td>
+        <td class="r">${money(a.cost)}</td><td class="r">${num(a.life)} yr</td>
+        <td class="r">${money(v.monthly)}</td><td class="r">${money(v.accum)}</td>
+        <td class="r"><b>${money(v.nbv)}</b></td>
+        <td class="r"><button class="icon" data-del="assets" data-id="${a.id}" title="Delete">✕</button></td>
+      </tr>`;
+    }).join('') : `<tr><td colspan="9" class="empty">No assets registered.</td></tr>`}</tbody>`;
+}
+
+/* ================= REGISTERS ================= */
+function partnerTotalOwnership() {
+  return (state.partners || []).reduce((a, p) => a + num(p.ownership), 0);
+}
+
+function renderRegKpis() {
+  const partners = state.partners || [];
+  const suppliers = state.suppliers || [];
+  const ownership = partnerTotalOwnership();
+  const vatSuppliers = suppliers.filter(s => (s.vatNo || '').trim()).length;
+  const agreed = partners.filter(p => (p.agreementRef || '').trim()).length;
+
+  $('#regKpis').innerHTML = [
+    { label: 'Partners', value: String(partners.length), sub: `${agreed} with agreement reference` },
+    { label: 'Ownership allocated', value: `${ownership.toFixed(1).replace('.', ',')}%`, sub: partners.length ? (Math.abs(ownership - 100) < 0.01 ? 'Totals 100% ✓' : 'Should total 100%') : 'No partners yet' },
+    { label: 'Suppliers', value: String(suppliers.length), sub: `${vatSuppliers} VAT-registered` },
+    { label: 'Register completeness', value: `${partners.length + suppliers.length}`, sub: 'rows across both registers' }
+  ].map(x => `<div class="kpi"><div class="kpi-label">${x.label}</div><div class="kpi-value">${x.value}</div><div class="kpi-sub">${x.sub}</div></div>`).join('');
+}
+
+function renderRegisters() {
+  renderRegKpis();
+  renderPartners();
+  renderSuppliers();
+  renderSnapshot();
+}
+
+const PARTNER_FIELDS = [
+  { key: 'name',          label: 'Name',           type: 'text' },
+  { key: 'idNumber',      label: 'ID / passport',  type: 'text' },
+  { key: 'ownership',     label: 'Ownership %',    type: 'number', num: true },
+  { key: 'capital',       label: 'Capital (R)',    type: 'number', num: true },
+  { key: 'role',          label: 'Role',           type: 'text' },
+  { key: 'email',         label: 'Email',          type: 'email' },
+  { key: 'phone',         label: 'Phone',          type: 'tel' },
+  { key: 'agreementDate', label: 'Agreement date', type: 'date' },
+  { key: 'agreementRef',  label: 'Agreement ref.', type: 'text' },
+  { key: 'notes',         label: 'Notes',          type: 'text' }
+];
+
+const SUPPLIER_FIELDS = [
+  { key: 'name',        label: 'Name',           type: 'text' },
+  { key: 'category',    label: 'Category',       type: 'select', options: SUPPLIER_CATS },
+  { key: 'contact',     label: 'Contact person', type: 'text' },
+  { key: 'email',       label: 'Email',          type: 'email' },
+  { key: 'phone',       label: 'Phone',          type: 'tel' },
+  { key: 'vatNo',       label: 'VAT number',     type: 'text' },
+  { key: 'terms',       label: 'Payment terms',  type: 'text' },
+  { key: 'bankDetails', label: 'Bank details',   type: 'text' },
+  { key: 'notes',       label: 'Notes',          type: 'text' }
+];
+
+function renderPartners() {
+  const list = state.partners || [];
+  const total = partnerTotalOwnership();
+  const totalCapital = list.reduce((s, p) => s + num(p.capital), 0);
+
+  if (!list.length) {
+    $('#tblPartners').innerHTML = `<thead><tr>${PARTNER_FIELDS.map(f => `<th>${f.label}</th>`).join('')}<th></th></tr></thead>
+      <tbody><tr><td colspan="${PARTNER_FIELDS.length + 1}" class="empty">No partners yet — click <b>+ Add partner</b> to start a register.</td></tr></tbody>`;
+    $('#partnerNote').textContent = 'Partners and partner agreements live here. Ownership should total 100%.';
+    return;
+  }
+
+  const header = PARTNER_FIELDS.map(f => `<th${f.num ? ' class="r"' : ''}>${f.label}</th>`).join('') + '<th></th>';
+  const body = list.map(p => {
+    const cells = PARTNER_FIELDS.map(f => {
+      const val = p[f.key] ?? '';
+      if (f.type === 'select') {
+        return `<td><select data-p-field="${f.key}" data-id="${p.id}">${f.options.map(o => `<option${o === val ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select></td>`;
+      }
+      return `<td${f.num ? ' class="num"' : ''}><input type="${f.type}" data-p-field="${f.key}" data-id="${p.id}" value="${esc(val)}"${f.num ? ' step="0.1" min="0" max="100"' : ''}></td>`;
+    }).join('');
+    return `<tr data-id="${p.id}">${cells}<td class="r"><button class="del" data-p-del="${p.id}" title="Delete partner">✕</button></td></tr>`;
+  }).join('');
+
+  const footer = `<tfoot><tr>
+    <td colspan="2" style="text-align:right">Total</td>
+    <td class="r" data-p-total>${total.toFixed(1).replace('.', ',')}%</td>
+    <td class="r" data-p-capital>${money0(totalCapital)}</td>
+    <td colspan="${PARTNER_FIELDS.length - 3}"></td>
+  </tr></tfoot>`;
+  $('#tblPartners').innerHTML = `<thead><tr>${header}</tr></thead><tbody>${body}</tbody>${footer}`;
+
+  const agrees = list.filter(p => (p.agreementRef || '').trim()).length;
+  $('#partnerNote').textContent = `${list.length} partner${list.length === 1 ? '' : 's'} · total ownership ${total.toFixed(1).replace('.', ',')}%${Math.abs(total - 100) > 0.01 ? ' (should total 100%)' : ' ✓'} · total capital ${money0(totalCapital)} · ${agrees} with an agreement reference.`;
+}
+
+function renderSuppliers() {
+  const list = state.suppliers || [];
+  if (!list.length) {
+    $('#tblSuppliers').innerHTML = `<thead><tr>${SUPPLIER_FIELDS.map(f => `<th>${f.label}</th>`).join('')}<th></th></tr></thead>
+      <tbody><tr><td colspan="${SUPPLIER_FIELDS.length + 1}" class="empty">No suppliers yet — click <b>+ Add supplier</b> to start a register.</td></tr></tbody>`;
+    $('#supplierNote').textContent = 'Track your suppliers, their payment terms, VAT numbers and banking details.';
+    return;
+  }
+
+  const header = SUPPLIER_FIELDS.map(f => `<th>${f.label}</th>`).join('') + '<th></th>';
+  const body = list.map(s => {
+    const cells = SUPPLIER_FIELDS.map(f => {
+      const val = s[f.key] ?? '';
+      if (f.type === 'select') {
+        return `<td><select data-s-field="${f.key}" data-id="${s.id}">${f.options.map(o => `<option${o === val ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select></td>`;
+      }
+      return `<td><input type="${f.type}" data-s-field="${f.key}" data-id="${s.id}" value="${esc(val)}"></td>`;
+    }).join('');
+    return `<tr data-id="${s.id}">${cells}<td class="r"><button class="del" data-s-del="${s.id}" title="Delete supplier">✕</button></td></tr>`;
+  }).join('');
+
+  $('#tblSuppliers').innerHTML = `<thead><tr>${header}</tr></thead><tbody>${body}</tbody>`;
+  const vat = list.filter(s => (s.vatNo || '').trim()).length;
+  $('#supplierNote').textContent = `${list.length} supplier${list.length === 1 ? '' : 's'} · ${vat} VAT-registered.`;
+}
+
+function renderSnapshot() {
+  const c = compute();
+  const bs = computeBalanceSheet();
+  const co = state.company;
+  const sub = currentUser && currentUser.subscription;
+  const partners = state.partners || [];
+  const suppliers = state.suppliers || [];
+  const ownership = partnerTotalOwnership();
+  const vatSuppliers = suppliers.filter(s => (s.vatNo || '').trim()).length;
+  const balanceStatus = Math.abs(bs.difference) < 0.01 ? 'Balanced ✓' : `Difference ${money(bs.difference)}`;
+
+  const cells = [
+    ['Company', co.name || '—'],
+    ['Registration no.', co.regNo || '—'],
+    ['Income tax ref.', co.taxId || '—'],
+    ['VAT reg. no.', co.vatNo || '—'],
+    ['Address', co.address || '—'],
+    ['Phone', co.phone || '—'],
+    ['Email', co.email || '—'],
+    ['Currency', co.currency || 'R'],
+    ['Partners', `${partners.length} · ${ownership.toFixed(1).replace('.', ',')}% allocated`],
+    ['Suppliers', `${suppliers.length} · ${vatSuppliers} VAT-registered`],
+    ['Revenue (period)', money(c.revenue)],
+    ['Expenses (period)', money(c.totalExp)],
+    ['Profit (period)', money(c.net)],
+    ['Total assets', money(bs.totalAssets)],
+    ['Total equity + liabilities', money(bs.totalEquityLiabilities)],
+    ['Balance check', balanceStatus],
+    ['Plan', sub ? `Annual · valid to ${fmtDate(sub.end)}` : '—'],
+    ['Days remaining', sub ? String(Math.max(0, daysUntil(sub.end))) : '—']
+  ];
+
+  $('#snapshot').innerHTML = `<div class="snapshot-grid">${cells.map(([k, v]) => `
+    <div class="snapshot-cell"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>
+  `).join('')}</div>`;
+}
+
+function updateRegisterKpis() {
+  const ownership = partnerTotalOwnership();
+  const totalCapital = (state.partners || []).reduce((s, p) => s + num(p.capital), 0);
+  const td  = $('#tblPartners tfoot [data-p-total]');
+  const tdc = $('#tblPartners tfoot [data-p-capital]');
+  if (td)  td.textContent  = ownership.toFixed(1).replace('.', ',') + '%';
+  if (tdc) tdc.textContent = money0(totalCapital);
+  renderRegKpis();
+  const partners = state.partners || [];
+  const agrees = partners.filter(p => (p.agreementRef || '').trim()).length;
+  const note = $('#partnerNote');
+  if (note) note.textContent = `${partners.length} partner${partners.length === 1 ? '' : 's'} · total ownership ${ownership.toFixed(1).replace('.', ',')}%${Math.abs(ownership - 100) > 0.01 ? ' (should total 100%)' : ' ✓'} · total capital ${money0(totalCapital)} · ${agrees} with an agreement reference.`;
+  const list = state.suppliers || [];
+  const vat = list.filter(s => (s.vatNo || '').trim()).length;
+  const sn = $('#supplierNote');
+  if (sn) sn.textContent = `${list.length} supplier${list.length === 1 ? '' : 's'} · ${vat} VAT-registered.`;
+}
+
+/* ================= CSV helpers ================= */
+function csvEscape(v) {
+  const s = String(v ?? '');
+  return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function rowsToCSV(rows) {
+  return rows.map(r => r.map(csvEscape).join(',')).join('\r\n');
+}
+function downloadFile(filename, content, mime) {
+  const blob = new Blob(['\ufeff' + content], { type: (mime || 'text/csv') + ';charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+}
+function exportPartners() {
+  const list = state.partners || [];
+  const rows = [PARTNER_FIELDS.map(f => f.label)];
+  list.forEach(p => rows.push(PARTNER_FIELDS.map(f => p[f.key] ?? '')));
+  rows.push([]);
+  rows.push(['Total ownership %', partnerTotalOwnership().toFixed(1)]);
+  rows.push(['Total capital (R)', list.reduce((s, p) => s + num(p.capital), 0).toFixed(2)]);
+  downloadFile(`partners-${todayISO()}.csv`, rowsToCSV(rows));
+}
+function exportSuppliers() {
+  const list = state.suppliers || [];
+  const rows = [SUPPLIER_FIELDS.map(f => f.label)];
+  list.forEach(s => rows.push(SUPPLIER_FIELDS.map(f => s[f.key] ?? '')));
+  downloadFile(`suppliers-${todayISO()}.csv`, rowsToCSV(rows));
+}
+function exportWorkbook() {
+  const co = state.company;
+  const c = compute();
+  const sub = currentUser && currentUser.subscription;
+  const rows = [];
+
+  rows.push(['BudgetZA full workbook']); rows.push(['Generated', new Date().toLocaleString('en-ZA')]);
+  rows.push([]);
+
+  rows.push(['SECTION', 'Company']);
+  rows.push(['Field', 'Value']);
+  rows.push(['Name', co.name]); rows.push(['Registration no.', co.regNo]); rows.push(['Address', co.address]);
+  rows.push(['Income tax ref.', co.taxId]); rows.push(['VAT no.', co.vatNo]);
+  rows.push(['Phone', co.phone]); rows.push(['Email', co.email]);
+  rows.push(['Currency', co.currency]);
+  rows.push(['VAT rate %', co.vatRate]); rows.push(['VAT registered', co.vatEnabled ? 'Yes' : 'No']);
+  rows.push(['Income tax rate %', co.incomeTaxRate]); rows.push(['SBC applied', co.sbcEnabled ? 'Yes' : 'No']);
+  rows.push([]);
+
+  rows.push(['SECTION', 'Subscription']);
+  rows.push(['Plan', 'Annual · 12 months']); rows.push(['Amount', PLAN_PRICE]);
+  rows.push(['Start', sub ? sub.start : '—']); rows.push(['End', sub ? sub.end : '—']);
+  rows.push(['Reference', sub ? sub.reference : '—']);
+  rows.push([]);
+
+  rows.push(['SECTION', 'Partners']);
+  rows.push(PARTNER_FIELDS.map(f => f.label));
+  (state.partners || []).forEach(p => rows.push(PARTNER_FIELDS.map(f => p[f.key] ?? '')));
+  rows.push(['Total ownership %', partnerTotalOwnership().toFixed(1)]);
+  rows.push(['Total capital (R)', (state.partners || []).reduce((s, p) => s + num(p.capital), 0).toFixed(2)]);
+  rows.push([]);
+
+  rows.push(['SECTION', 'Suppliers']);
+  rows.push(SUPPLIER_FIELDS.map(f => f.label));
+  (state.suppliers || []).forEach(s => rows.push(SUPPLIER_FIELDS.map(f => s[f.key] ?? '')));
+  rows.push([]);
+
+  rows.push(['SECTION', 'Income']);
+  rows.push(['Date', 'Description', 'Category', 'Method', 'Amount (R)']);
+  state.incomes.filter(t => inP(t.date)).sort((a, b) => a.date.localeCompare(b.date))
+    .forEach(t => rows.push([t.date, t.desc, t.category, t.method, num(t.amount).toFixed(2)]));
+  rows.push(['Total', '', '', '', c.revenue.toFixed(2)]);
+  rows.push([]);
+
+  rows.push(['SECTION', 'Expenses']);
+  rows.push(['Date', 'Description', 'Category', 'Method', 'Amount (R)']);
+  state.expenses.filter(t => inP(t.date)).sort((a, b) => a.date.localeCompare(b.date))
+    .forEach(t => rows.push([t.date, t.desc, t.category, t.method, num(t.amount).toFixed(2)]));
+  rows.push(['Total', '', '', '', c.totalExp.toFixed(2)]);
+  rows.push([]);
+
+  rows.push(['SECTION', 'Assets']);
+  rows.push(['Name', 'Category', 'Purchased', 'Cost (R)', 'Life (years)', 'Residual (R)', 'Accum. dep.', 'Net book value']);
+  (state.assets || []).forEach(a => {
+    const v = assetValuation(a);
+    rows.push([a.name, a.category, a.date, num(a.cost).toFixed(2), a.life, num(a.salvage).toFixed(2), v.accum.toFixed(2), v.nbv.toFixed(2)]);
+  });
+  rows.push([]);
+
+  rows.push(['SECTION', 'Summary']);
+  rows.push(['Revenue', c.revenue.toFixed(2)]);
+  rows.push(['Expenses', c.totalExp.toFixed(2)]);
+  rows.push(['Depreciation', c.dep.toFixed(2)]);
+  rows.push(['Profit before tax', c.ebit.toFixed(2)]);
+  rows.push(['Estimated tax', c.tax.toFixed(2)]);
+  rows.push(['Profit after tax', c.net.toFixed(2)]);
+  rows.push(['Cash at end of period', c.closeCash.toFixed(2)]);
+
+  const bs = computeBalanceSheet();
+  rows.push([]);
+  rows.push(['SECTION', 'Balance sheet (as at ' + P().to + ')']);
+  rows.push(['Assets']);
+  rows.push(['Property, plant and equipment', bs.ppeNbv.toFixed(2)]);
+  rows.push(['Other non-current assets', bs.otherNCA.toFixed(2)]);
+  rows.push(['Total non-current assets', bs.nonCurrentAssets.toFixed(2)]);
+  rows.push(['Inventories', bs.inventory.toFixed(2)]);
+  rows.push(['Trade and other receivables', bs.receivables.toFixed(2)]);
+  rows.push(['Cash and cash equivalents', bs.cash.toFixed(2)]);
+  rows.push(['Total current assets', bs.currentAssets.toFixed(2)]);
+  rows.push(['Total assets', bs.totalAssets.toFixed(2)]);
+  rows.push(['Equity and liabilities']);
+  rows.push(['Partner capital', bs.partnerCapital.toFixed(2)]);
+  rows.push(['Retained earnings', bs.retainedEarnings.toFixed(2)]);
+  rows.push(['Total equity', bs.totalEquity.toFixed(2)]);
+  rows.push(['Long-term borrowings', bs.longTermLoans.toFixed(2)]);
+  rows.push(['Trade and other payables', bs.tradePayables.toFixed(2)]);
+  rows.push(['VAT payable', Math.max(0, bs.vatPayable).toFixed(2)]);
+  rows.push(['Income tax payable', Math.max(0, bs.taxPayable).toFixed(2)]);
+  rows.push(['Total liabilities', bs.totalLiabilities.toFixed(2)]);
+  rows.push(['Total equity and liabilities', bs.totalEquityLiabilities.toFixed(2)]);
+  rows.push(['Balance check (should be 0)', bs.difference.toFixed(2)]);
+
+  downloadFile(`budgetza-workbook-${todayISO()}.csv`, rowsToCSV(rows));
+}
+
+function renderReports() {
+  const c = compute();
+  $('#stmtIncome').innerHTML = stmtHTML(incomeStatementRows(c));
+  $('#stmtCash').innerHTML = stmtHTML(cashFlowRows(c));
+}
+
+function renderBalanceSheet() {
+  const b = computeBalanceSheet();
+  const isBalanced = Math.abs(b.difference) < 0.01;
+
+  $('#stmtBalance').innerHTML = `
+    ${stmtHTML(balanceSheetRows(b))}
+    <div class="bs-check ${isBalanced ? 'ok' : 'warn'}">
+      <div class="bs-check-row">
+        <span><b>Balance check</b></span>
+        <span style="color:${isBalanced ? '#047857' : '#b91c1c'};font-weight:700">${isBalanced ? 'Balanced ✓' : 'Difference ' + money(b.difference)}</span>
+      </div>
+      <div class="bs-check-row" style="margin-top:6px;color:#475569;font-size:12.5px">
+        <span>Total assets: <b>${money(b.totalAssets)}</b></span>
+        <span>Total equity + liabilities: <b>${money(b.totalEquityLiabilities)}</b></span>
+      </div>
+      ${!isBalanced ? `<p class="bs-check-note">
+        The difference indicates items not yet captured. Common causes: opening capital or opening retained earnings not entered,
+        partner capital not recorded, unrecorded loans, receivables or payables, or prior-period VAT/income tax not yet settled.
+        Update the balance sheet setup in <b>Settings</b> to reconcile.
+        ${state.company.vatEnabled ? '<br><br><b>VAT note:</b> if you\'re VAT-registered and see a difference equal to your VAT amount, check the "Amounts include VAT" toggle in Settings — recorded amounts must match the chosen VAT treatment for the balance sheet to reconcile automatically.' : ''}
+      </p>` : ''}
+    </div>
+  `;
+}
+
+function renderTax() {
+  const c = compute();
+  const co = state.company;
+  const vatRate = num(co.vatRate) / 100;
+  const enabled = !!co.vatEnabled;
+  const factor = co.vatInclusive ? 1 / (1 + vatRate) : 1;
+  const vatCollected = enabled ? c.revenue * vatRate * factor : 0;
+  const vatPaid      = enabled ? c.totalExp * vatRate * factor : 0;
+  const vatNet       = vatCollected - vatPaid;
+
+  $('#taxVat').innerHTML = enabled ? `
+    <table class="stmt"><tbody>
+      <tr><td>Output VAT on sales and services (${num(co.vatRate).toFixed(1)}%)</td><td class="r">${money(vatCollected)}</td></tr>
+      <tr><td>Input VAT on purchases and expenses (${num(co.vatRate).toFixed(1)}%)</td><td class="r">−${money(vatPaid)}</td></tr>
+      <tr class="grand"><td>${vatNet >= 0 ? 'VAT payable to SARS' : 'VAT refundable by SARS'}</td><td class="r">${money(Math.abs(vatNet))}</td></tr>
+    </tbody></table>
+    <p class="muted" style="margin:12px 0 0">VAT201 basis. ${co.vatInclusive ? 'Amounts are treated as VAT-inclusive.' : 'Amounts are treated as VAT-exclusive.'} The standard rate is 15%; keep VAT registration only if turnover exceeds the compulsory threshold.</p>
+  ` : `<p class="muted">VAT is switched off. Enable <b>VAT registered</b> in Settings to track output and input tax for VAT201 returns.</p>`;
+
+  const taxable = Math.max(0, c.ebit);
+  const sbc = !!co.sbcEnabled;
+  const bands = sbc ? saSbcBands(taxable) : [];
+  const flatTax = taxable * num(co.incomeTaxRate) / 100;
+
+  $('#taxIncome').innerHTML = `
+    <table class="stmt"><tbody>
+      <tr><td>Operating profit (EBIT)</td><td class="r">${money(c.ebit)}</td></tr>
+      <tr><td>Assessed loss brought forward (not tracked)</td><td class="r">${money(0)}</td></tr>
+      <tr class="tot"><td>Taxable profit</td><td class="r">${money(taxable)}</td></tr>
+      <tr><td>Method</td><td class="r">${sbc ? 'SBC sliding scale' : 'Flat company rate ' + num(co.incomeTaxRate).toFixed(1) + '%'}</td></tr>
+      <tr class="sec"><td colspan="2">Normal tax computation</td></tr>
+      ${sbc ? (bands.length ? bands.map(b => `<tr><td class="ind">${b.label} @ ${b.rate.toFixed(0)}% on ${money(b.base)}</td><td class="r">${money(b.tax)}</td></tr>`).join('') : `<tr><td class="ind">Profit below SBC threshold</td><td class="r">${money(0)}</td></tr>`)
+        : `<tr><td class="ind">Taxable profit @ ${num(co.incomeTaxRate).toFixed(1)}%</td><td class="r">${money(flatTax)}</td></tr>`}
+      <tr class="tot"><td>Estimated normal tax for the period</td><td class="r">${money(c.tax)}</td></tr>
+      <tr><td>Effective tax rate</td><td class="r">${taxable ? (c.tax / taxable * 100).toFixed(1) : '0,0'}%</td></tr>
+      <tr><td>Provisional tax — each IRP6 payment (≈ tax ÷ 2)</td><td class="r">${money(c.tax / 2)}</td></tr>
+      <tr class="grand"><td>Profit for the period after tax</td><td class="r">${money(c.net)}</td></tr>
+    </tbody></table>
+    <p class="muted" style="margin:12px 0 0">SBC scale: 0% up to R95 750 · 7% to R365 000 · 21% to R550 000 · 28% above; flat company rate 27%. Provisional tax (IRP6) is usually paid twice a year. Estimate only — confirm current SARS rates with your accountant.</p>`;
+}
+
+function renderSettings() {
+  const co = state.company;
+  $$('#view-settings [data-setting]').forEach(el => {
+    const key = el.dataset.setting.split('.')[1];
+    if (el.type === 'checkbox') el.checked = !!co[key];
+    else el.value = co[key] ?? '';
+  });
+  renderSubscription();
+}
+
+function renderSubscription() {
+  const el = $('#subCard');
+  if (!el || !currentUser) return;
+  const sub = currentUser.subscription;
+  if (!sub) {
+    el.innerHTML = `<h3>Subscription &amp; access</h3><p class="muted">No subscription on record. <button class="btn primary sm" id="subRenew" style="margin-left:8px">Activate 12-month plan — ${money0(PLAN_PRICE)}</button></p>`;
+    const b = $('#subRenew'); if (b) b.addEventListener('click', renewSubscription);
+    return;
+  }
+  const st = subStatus(sub);
+  const pill = st.state === 'active'   ? `<span class="pill" style="background:#ecfdf5;color:#065f46">Active</span>`
+             : st.state === 'expiring' ? `<span class="pill" style="background:#fffbeb;color:#92400e">Expires in ${st.days} days</span>`
+             :                            `<span class="pill" style="background:#fef2f2;color:#991b1b">Expired</span>`;
+  const renewals = (sub.renewals || []).slice().reverse();
+
+  el.innerHTML = `
+    <h3>Subscription &amp; access</h3>
+    <div class="sub-grid">
+      <div><span class="k">Plan</span><span class="v">Annual access · 12 months ${pill}</span></div>
+      <div><span class="k">Amount</span><span class="v">${money0(sub.amount || PLAN_PRICE)} once-off (incl. VAT)</span></div>
+      <div><span class="k">Access from</span><span class="v">${fmtDate(sub.start)}</span></div>
+      <div><span class="k">Access until</span><span class="v"><b>${fmtDate(sub.end)}</b></span></div>
+      <div><span class="k">Days remaining</span><span class="v">${st.days > 0 ? st.days + ' days' : '0 days (expired)'}</span></div>
+      <div><span class="k">Reference</span><span class="v">${esc(sub.reference || '—')}</span></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn primary" id="subRenew">Renew for 12 months — ${money0(PLAN_PRICE)}</button>
+    </div>
+    <p class="muted" style="margin:12px 0 0">Once-off annual plan — no auto-renewal, no monthly debit orders. Renew manually whenever you're ready. Demo mode: renewals are simulated and no payment is taken.</p>
+    ${renewals.length ? `<details style="margin-top:12px"><summary style="cursor:pointer;font-size:13px;font-weight:700;color:#475569">Renewal history (${renewals.length})</summary>
+      <div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Date</th><th class="r">Amount</th><th>Extended to</th></tr></thead>
+      <tbody>${renewals.map(r => `<tr><td>${fmtDate(r.date)}</td><td class="r">${money0(r.amount)}</td><td>${fmtDate(r.end)}</td></tr>`).join('')}</tbody></table></div>
+    </details>` : ''}`;
+
+  const b = $('#subRenew'); if (b) b.addEventListener('click', renewSubscription);
+}
+
+/* =====================================================================
+   PRINT
+   ===================================================================== */
+function buildPrintDoc() {
+  const c = compute();
+  const b = computeBalanceSheet();
+  const co = state.company;
+  const p = P();
+  const sub = currentUser && currentUser.subscription;
+
+  const assetRows = state.assets.slice().sort((a, b) => a.date.localeCompare(b.date)).map(a => {
+    const v = assetValuation(a);
+    return `<tr><td>${esc(a.name)}</td><td>${esc(a.category)}</td><td>${fmtDate(a.date)}</td><td class="r">${money(a.cost)}</td><td class="r">${num(a.life)} yr</td><td class="r">${money(v.accum)}</td><td class="r">${money(v.nbv)}</td></tr>`;
+  }).join('');
+
+  const months = monthsInPeriod(p);
+  const idx = new Map(months.map((m, i) => [m.key, i]));
+  const series = months.map(m => ({ label: m.label, income: 0, expense: 0 }));
+  state.incomes.filter(t => inP(t.date)).forEach(t => { const i = idx.get(t.date.slice(0,7)); if (i != null) series[i].income += num(t.amount); });
+  state.expenses.filter(t => inP(t.date)).forEach(t => { const i = idx.get(t.date.slice(0,7)); if (i != null) series[i].expense += num(t.amount); });
+
+  const vatRate = num(co.vatRate) / 100;
+  const factor = co.vatInclusive ? 1 / (1 + vatRate) : 1;
+  const vatCollected = co.vatEnabled ? c.revenue * vatRate * factor : 0;
+  const vatPaid = co.vatEnabled ? c.totalExp * vatRate * factor : 0;
+
+  const days = dailyRows();
+  const dayRows = days.slice(0, 60).map(r => `<tr><td>${fmtDate(r.date)}</td><td class="r">${r.count || '—'}</td><td class="r">${money(r.income)}</td><td class="r">${money(r.expense)}</td><td class="r">${money(r.income - r.expense)}</td></tr>`).join('');
+  const dayTotals = days.reduce((a, r) => { a.count += r.count; a.income += r.income; a.expense += r.expense; return a; }, { count: 0, income: 0, expense: 0 });
+
+  const monthBuckets = buildBuckets('monthly').slice(-12);
+  const monthRows = monthBuckets.map(mb => `<tr><td>${esc(mb.range)}</td><td class="r">${mb.count || '—'}</td><td class="r">${money(mb.income)}</td><td class="r">${money(mb.expense)}</td><td class="r">${money(mb.net)}</td><td class="r">${money(mb.cum)}</td></tr>`).join('');
+  const monthTotals = monthBuckets.reduce((a, mb) => { a.income += mb.income; a.expense += mb.expense; a.net += mb.net; a.count += mb.count; return a; }, { income: 0, expense: 0, net: 0, count: 0 });
+
+  const partners = state.partners || [];
+  const suppliers = state.suppliers || [];
+  const ownership = partnerTotalOwnership();
+  const totalCapital = partners.reduce((s, pr) => s + num(pr.capital), 0);
+
+  const plainStmt = rows => `<table><tbody>${rows.map(r => {
+    if (r.section) return `<tr><td colspan="2" style="padding-top:12px;font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #000">${esc(r.label)}</td></tr>`;
+    return `<tr><td style="padding-left:${r.indent ? 16 : 0}px${r.grand ? ';font-weight:800;border-top:2px solid #000' : r.total ? ';font-weight:700' : ''}">${esc(r.label)}</td><td class="r"${r.grand ? ' style="font-weight:800;border-top:2px solid #000"' : r.total ? ' style="font-weight:700"' : ''}>${r.value == null ? '' : money(r.value)}</td></tr>`;
+  }).join('')}</tbody></table>`;
+
+  const taxable = Math.max(0, c.ebit);
+  const bands = co.sbcEnabled ? saSbcBands(taxable) : [];
+
+  return `
+  <div class="print-doc">
+    <div class="ph">
+      <div>
+        <h1>${esc(co.name || 'Company')}</h1>
+        <div>${esc(co.address || '')}</div>
+        <div><strong>Company registration no.:</strong> ${esc(co.regNo || '—')}</div>
+        <div>Income tax ref.: ${esc(co.taxId || '—')} · VAT reg. no.: ${esc(co.vatNo || '—')}</div>
+        <div>${esc(co.phone || '')}${co.phone && co.email ? ' · ' : ''}${esc(co.email || '')}</div>
+      </div>
+      <div class="meta">
+        <div class="doc-title">Financial Report</div>
+        <div><strong>Period:</strong> ${fmtDate(p.from)} – ${fmtDate(p.to)}</div>
+        <div><strong>Generated:</strong> ${new Date().toLocaleString('en-ZA')}</div>
+        <div><strong>Currency:</strong> ${esc(co.currency || 'R')} (ZAR)</div>
+        <div><strong>Plan:</strong> Annual · valid to ${sub ? fmtDate(sub.end) : '—'}</div>
+      </div>
+    </div>
+
+    <div class="basis">
+      <strong>Basis of preparation:</strong> These management accounts are prepared in accordance with IFRS for SMEs (SA GAAP),
+      the Companies Act 71 of 2008, the Value-Added Tax Act 89 of 1991 and the Income Tax Act 58 of 1962.
+      Amounts are in South African Rand. Depreciation is calculated on the straight-line basis per IAS 16.
+    </div>
+
+    <div class="section"><div class="summary">
+      <div>Revenue<b>${money(c.revenue)}</b></div>
+      <div>Expenses<b>${money(c.totalExp)}</b></div>
+      <div>Profit for the period<b>${money(c.net)}</b></div>
+      <div>Cash at end of period<b>${money(c.closeCash)}</b></div>
+    </div></div>
+
+    <div class="section"><h2>Statement of Comprehensive Income</h2>${plainStmt(incomeStatementRows(c))}</div>
+
+    <div class="section">
+      <h2>Statement of Financial Position</h2>
+      ${plainStmt(balanceSheetRows(b))}
+      <div style="margin-top:10px;border:1px solid #bbb;border-radius:5px;padding:8px 10px;font-size:10px">
+        <div style="display:flex;justify-content:space-between">
+          <span><b>Balance check</b></span>
+          <span style="color:${Math.abs(b.difference) < 0.01 ? '#065f46' : '#991b1b'}">${Math.abs(b.difference) < 0.01 ? 'Balanced' : money(b.difference)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:3px;color:#555">
+          <span>Total assets ${money(b.totalAssets)}</span>
+          <span>Total equity and liabilities ${money(b.totalEquityLiabilities)}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section"><h2>Statement of Cash Flows</h2>${plainStmt(cashFlowRows(c))}</div>
+
+    <div class="section"><h2>Monthly Performance Summary</h2>
+      <table><thead><tr><th>Month</th><th class="r">Receipts</th><th class="r">Income received</th><th class="r">Expenses paid</th><th class="r">Net cash</th><th class="r">Cumulative</th></tr></thead>
+      <tbody>${monthRows || `<tr><td colspan="6">No monthly activity recorded.</td></tr>`}
+        ${monthBuckets.length ? `<tr class="tot"><td>Total</td><td class="r">${monthTotals.count}</td><td class="r">${money(monthTotals.income)}</td><td class="r">${money(monthTotals.expense)}</td><td class="r">${money(monthTotals.net)}</td><td class="r">${money(monthBuckets[monthBuckets.length-1].cum)}</td></tr>` : ''}
+      </tbody></table>
+    </div>
+
+    <div class="section"><h2>Daily Sales / Income Received</h2>
+      <table><thead><tr><th>Date</th><th class="r">Receipts</th><th class="r">Income received</th><th class="r">Expenses paid</th><th class="r">Net cash for day</th></tr></thead>
+      <tbody>${dayRows || `<tr><td colspan="5">No daily activity recorded.</td></tr>`}
+        ${days.length ? `<tr class="tot"><td>Total</td><td class="r">${dayTotals.count}</td><td class="r">${money(dayTotals.income)}</td><td class="r">${money(dayTotals.expense)}</td><td class="r">${money(dayTotals.income - dayTotals.expense)}</td></tr>` : ''}
+      </tbody></table>
+      ${days.length > 60 ? `<div style="font-size:9.5px;color:#555;margin-top:4px">Showing the first 60 of ${days.length} active days; totals cover the full period.</div>` : ''}
+    </div>
+
+    <div class="section"><h2>Income vs Expenses</h2>${barChartSVG(series)}</div>
+
+    <div class="section"><h2>Asset Register</h2>
+      <table><thead><tr><th>Asset</th><th>Category</th><th>Purchased</th><th class="r">Cost</th><th class="r">Life</th><th class="r">Accum. dep.</th><th class="r">Net book value</th></tr></thead>
+      <tbody>${assetRows || `<tr><td colspan="7">No assets registered.</td></tr>`}</tbody></table>
+    </div>
+
+    <div class="section">
+      <h2>Partners &amp; Partner Agreements</h2>
+      <table>
+        <thead><tr>
+          <th>Name</th><th>ID / passport</th><th class="r">Ownership</th><th class="r">Capital</th>
+          <th>Role</th><th>Agreement date</th><th>Agreement ref.</th><th>Phone</th><th>Email</th><th>Notes</th>
+        </tr></thead>
+        <tbody>${partners.map(pr => `<tr>
+          <td>${esc(pr.name)}</td><td>${esc(pr.idNumber || '—')}</td>
+          <td class="r">${num(pr.ownership).toFixed(1)}%</td>
+          <td class="r">${money(pr.capital || 0)}</td>
+          <td>${esc(pr.role || '—')}</td>
+          <td>${esc(pr.agreementDate ? fmtDate(pr.agreementDate) : '—')}</td>
+          <td>${esc(pr.agreementRef || '—')}</td><td>${esc(pr.phone || '—')}</td>
+          <td>${esc(pr.email || '—')}</td><td>${esc(pr.notes || '')}</td>
+        </tr>`).join('') || `<tr><td colspan="10">No partners recorded.</td></tr>`}</tbody>
+        ${partners.length ? `<tfoot><tr>
+          <td colspan="2" style="text-align:right;font-weight:700;border-top:1px solid #000">Total</td>
+          <td class="r" style="font-weight:700;border-top:1px solid #000">${ownership.toFixed(1)}%</td>
+          <td class="r" style="font-weight:700;border-top:1px solid #000">${money0(totalCapital)}</td>
+          <td colspan="6" style="border-top:1px solid #000"></td>
+        </tr></tfoot>` : ''}
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Suppliers &amp; Service Providers</h2>
+      <table>
+        <thead><tr>
+          <th>Name</th><th>Category</th><th>Contact</th><th>Phone</th><th>Email</th>
+          <th>VAT no.</th><th>Payment terms</th><th>Bank details</th>
+        </tr></thead>
+        <tbody>${suppliers.map(su => `<tr>
+          <td>${esc(su.name)}</td><td>${esc(su.category || '—')}</td><td>${esc(su.contact || '—')}</td>
+          <td>${esc(su.phone || '—')}</td><td>${esc(su.email || '—')}</td><td>${esc(su.vatNo || '—')}</td>
+          <td>${esc(su.terms || '—')}</td><td>${esc(su.bankDetails || '—')}</td>
+        </tr>`).join('') || `<tr><td colspan="8">No suppliers recorded.</td></tr>`}</tbody>
+      </table>
+    </div>
+
+    <div class="section"><h2>Tax Summary</h2>
+      <table><tbody>
+        ${co.vatEnabled ? `
+          <tr><td>Output VAT collected (${num(co.vatRate).toFixed(1)}%)</td><td class="r">${money(vatCollected)}</td></tr>
+          <tr><td>Input VAT paid (${num(co.vatRate).toFixed(1)}%)</td><td class="r">−${money(vatPaid)}</td></tr>
+          <tr class="tot"><td>Net VAT payable / (refundable)</td><td class="r">${money(vatCollected - vatPaid)}</td></tr>` : ''}
+        <tr><td>Taxable profit (EBIT)</td><td class="r">${money(taxable)}</td></tr>
+        <tr><td>Method</td><td class="r">${co.sbcEnabled ? 'SBC sliding scale' : 'Flat company rate ' + num(co.incomeTaxRate).toFixed(1) + '%'}</td></tr>
+        ${co.sbcEnabled && bands.length ? bands.map(band => `<tr><td style="padding-left:16px">${band.label} @ ${band.rate.toFixed(0)}% on ${money(band.base)}</td><td class="r">${money(band.tax)}</td></tr>`).join('') : ''}
+        <tr class="tot"><td>Estimated normal tax</td><td class="r">${money(c.tax)}</td></tr>
+        <tr class="tot"><td>Profit for the period after tax</td><td class="r">${money(c.net)}</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="foot">
+      Prepared by ${esc(co.name || 'the business')} (Reg. no. ${esc(co.regNo || '—')}) · ${fmtDate(p.from)} to ${fmtDate(p.to)} ·
+      Prepared in accordance with IFRS for SMEs (SA GAAP). Figures are management estimates and have not been audited.
+      Tax figures are estimates only and must be confirmed with SARS or a registered tax practitioner.
+      BudgetZA annual plan — access valid to ${sub ? fmtDate(sub.end) : '—'}.
+    </div>
+  </div>`;
+}
+
+function doPrint() {
+  if (!state) return;
+  $('#print-root').innerHTML = buildPrintDoc();
+  window.print();
+}
+
+/* =====================================================================
+   BOOTSTRAP
+   ===================================================================== */
+function fillCategorySelects() {
+  const opts = arr => arr.map(c => `<option>${esc(c)}</option>`).join('');
+  $('#incomeCats').innerHTML  = opts(CATEGORIES.income);
+  $('#expenseCats').innerHTML = opts(CATEGORIES.expense);
+  $('#assetCats').innerHTML   = opts(CATEGORIES.asset);
+}
+function syncPeriodInputs() {
+  $('#periodFrom').value = P().from;
+  $('#periodTo').value = P().to;
+  $('#periodPreset').value = P().preset;
+  const locked = P().preset !== 'custom';
+  $('#periodFrom').disabled = locked;
+  $('#periodTo').disabled = locked;
+}
+function refresh() { saveState(); syncPeriodInputs(); render(); }
+
+async function bootApp() {
+  const loaded = await loadState();
+  state = loaded || emptyState();
+  if (!state.period.from || !state.period.to) {
+    applyPreset(state.period.preset || 'taxyear');
+  }
+  if (!booted) { init(); booted = true; }
+  else { refresh(); }
+}
+
+function init() {
+  fillCategorySelects();
+  syncPeriodInputs();
+  const setToday = form => { if (form && form.date) form.date.value = todayISO(); };
+  setToday($('#formIncome'));
+  setToday($('#formExpense'));
+  setToday($('#formAsset'));
+
+  $('#tabs').addEventListener('click', e => {
+    const btn = e.target.closest('button[data-view]');
+    if (!btn) return;
+    state.ui.view = btn.dataset.view;
+    refresh();
+  });
+  $('#granSeg').addEventListener('click', e => {
+    const btn = e.target.closest('button[data-gran]');
+    if (!btn) return;
+    state.ui.trackGran = btn.dataset.gran;
+    refresh();
+  });
+  $('#periodPreset').addEventListener('change', e => {
+    const v = e.target.value;
+    if (v === 'custom') { state.period.preset = 'custom'; syncPeriodInputs(); }
+    else { applyPreset(v); refresh(); }
+  });
+  $('#periodFrom').addEventListener('change', e => {
+    state.period.preset = 'custom';
+    state.period.from = e.target.value || state.period.from;
+    if (state.period.from > state.period.to) state.period.to = state.period.from;
+    refresh();
+  });
+  $('#periodTo').addEventListener('change', e => {
+    state.period.preset = 'custom';
+    state.period.to = e.target.value || state.period.to;
+    if (state.period.to < state.period.from) state.period.from = state.period.to;
+    refresh();
+  });
+  $('#formIncome').addEventListener('submit', e => {
+    e.preventDefault();
+    const f = e.target;
+    state.incomes.push({ id: uid(), date: f.date.value || todayISO(), desc: f.desc.value.trim() || 'Income received', category: f.category.value, amount: num(f.amount.value), method: f.method.value });
+    f.reset(); setToday(f); refresh();
+  });
+  $('#formExpense').addEventListener('submit', e => {
+    e.preventDefault();
+    const f = e.target;
+    state.expenses.push({ id: uid(), date: f.date.value || todayISO(), desc: f.desc.value.trim() || 'Expense', category: f.category.value, amount: num(f.amount.value), method: f.method.value });
+    f.reset(); setToday(f); refresh();
+  });
+  $('#formAsset').addEventListener('submit', e => {
+    e.preventDefault();
+    const f = e.target;
+    state.assets.push({ id: uid(), name: f.name.value.trim() || 'Asset', category: f.category.value, date: f.date.value || todayISO(), cost: num(f.cost.value), life: Math.max(1, num(f.life.value) || 1), salvage: num(f.salvage.value) });
+    f.reset(); setToday(f); f.life.value = 5; f.salvage.value = 0; refresh();
+  });
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-del]');
+    if (!btn) return;
+    const list = state[btn.dataset.del];
+    const i = list.findIndex(x => x.id === btn.dataset.id);
+    if (i > -1) { list.splice(i, 1); refresh(); }
+  });
+
+  /* Settings — no render() call on input (fix: cursor jump) */
+  $('#view-settings').addEventListener('input', e => {
+    const el = e.target.closest('[data-setting]');
+    if (!el) return;
+    const key = el.dataset.setting.split('.')[1];
+    let v;
+    if (el.type === 'checkbox')     v = el.checked;
+    else if (el.type === 'number')  v = el.value;   // keep raw string until save
+    else                            v = el.value;
+    state.company[key] = v;
+    saveProfile();
+    $('#topCoName').textContent = state.company.name || 'Your Company';
+  });
+
+  $('#btnClear').addEventListener('click', async () => {
+    if (!confirm('Delete all transactions, assets, partners, suppliers and settings for this account? This cannot be undone.')) return;
+    const co = { ...state.company };
+    state = emptyState();
+    state.company = co;
+    applyPreset('taxyear');
+    await flushSave();
+    render();
+  });
+  $('#btnDemo').addEventListener('click', async () => {
+    if (!confirm('Replace this account\'s data with fresh South African demo data?')) return;
+    const co = { ...state.company };
+    state = seedState();
+    state.company.name = co.name;
+    state.company.email = co.email;
+    applyPreset('taxyear');
+    await flushSave();
+    await pushProfileToSupabase();
+    render();
+  });
+  $('#btnPrint').addEventListener('click', doPrint);
+  $('#btnLogout').addEventListener('click', logout);
+
+  /* Registers */
+  $('#btnAddPartner').addEventListener('click', () => {
+    state.partners.push({ id: uid(), name: '', idNumber: '', ownership: '', capital: '', role: '', email: '', phone: '', agreementDate: '', agreementRef: '', notes: '' });
+    refresh();
+    requestAnimationFrame(() => {
+      const rows = $$('#tblPartners tbody tr[data-id]');
+      const last = rows[rows.length - 1];
+      const inp = last && last.querySelector('input');
+      if (inp) inp.focus();
+    });
+  });
+  $('#btnAddSupplier').addEventListener('click', () => {
+    state.suppliers.push({ id: uid(), name: '', category: 'Materials', contact: '', email: '', phone: '', vatNo: '', terms: '', bankDetails: '', notes: '' });
+    refresh();
+    requestAnimationFrame(() => {
+      const rows = $$('#tblSuppliers tbody tr[data-id]');
+      const last = rows[rows.length - 1];
+      const inp = last && last.querySelector('input');
+      if (inp) inp.focus();
+    });
+  });
+  $('#btnExportPartners').addEventListener('click', exportPartners);
+  $('#btnExportSuppliers').addEventListener('click', exportSuppliers);
+  $('#btnExportAll').addEventListener('click', exportWorkbook);
+
+  $('#tblPartners').addEventListener('input', e => {
+    const el = e.target.closest('[data-p-field]');
+    if (!el) return;
+    const p = state.partners.find(x => x.id === el.dataset.id);
+    if (!p) return;
+    const f = el.dataset.pField;
+    p[f] = el.type === 'number' ? (el.value === '' ? '' : num(el.value)) : el.value;
+    saveState();
+    updateRegisterKpis();
+  });
+  $('#tblPartners').addEventListener('click', e => {
+    const btn = e.target.closest('[data-p-del]');
+    if (!btn) return;
+    state.partners = state.partners.filter(x => x.id !== btn.dataset.pDel);
+    refresh();
+  });
+
+  $('#tblSuppliers').addEventListener('input', e => {
+    const el = e.target.closest('[data-s-field]');
+    if (!el) return;
+    const s = state.suppliers.find(x => x.id === el.dataset.id);
+    if (!s) return;
+    s[el.dataset.sField] = el.value;
+    saveState();
+    updateRegisterKpis();
+  });
+  $('#tblSuppliers').addEventListener('change', e => {
+    const el = e.target.closest('[data-s-field]');
+    if (!el) return;
+    const s = state.suppliers.find(x => x.id === el.dataset.id);
+    if (!s) return;
+    s[el.dataset.sField] = el.value;
+    saveState();
+  });
+  $('#tblSuppliers').addEventListener('click', e => {
+    const btn = e.target.closest('[data-s-del]');
+    if (!btn) return;
+    state.suppliers = state.suppliers.filter(x => x.id !== btn.dataset.sDel);
+    refresh();
+  });
+
+  refresh();
+}
+
+/* =====================================================================
+   SITE WIRING
+   ===================================================================== */
+$('#footYear').textContent = new Date().getFullYear();
+
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-auth]');
+  if (a) { e.preventDefault(); showAuth(a.dataset.auth); return; }
+  const g = e.target.closest('[data-goto]');
+  if (g) { e.preventDefault(); if (g.dataset.goto === 'landing') showLanding(); return; }
+});
+
+$('#lBurger').addEventListener('click', () => $('#lMobile').classList.toggle('open'));
+$$('#lMobile a').forEach(a => a.addEventListener('click', () => $('#lMobile').classList.remove('open')));
+$$('#lMobile [data-auth]').forEach(b => b.addEventListener('click', () => $('#lMobile').classList.remove('open')));
+
+$$('.pw-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const input = document.getElementById(btn.dataset.pw);
+    if (!input) return;
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.textContent = show ? '🙈' : '👁';
+    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  });
+});
+
+$('#loginForm').addEventListener('submit', doLogin);
+$('#signupForm').addEventListener('submit', doSignup);
+
+$$('#loginForm input, #signupForm input').forEach(inp => {
+  inp.addEventListener('input', () => {
+    const fld = inp.closest('.fld');
+    if (fld) fld.classList.remove('bad');
+    if (inp.name === 'terms') $('#suTermsErr').style.display = 'none';
+    clearAlert();
+  });
+});
+
+$('#forgotLink').addEventListener('click', async e => {
+  e.preventDefault();
+  const email = ($('#lgEmail').value || '').trim().toLowerCase();
+  if (!validEmail(email)) return alertAuth('Enter your email above, then click "Forgot password" again to receive a reset link.');
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+  if (error) return alertAuth(error.message);
+  alertAuth('Password reset email sent. Check your inbox for the link.', true);
+});
+</script>
+</body>
+</html>
